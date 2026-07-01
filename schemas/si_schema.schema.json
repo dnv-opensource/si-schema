@@ -2780,5 +2780,5 @@
   "title": "SISchema",
   "type": "object",
   "$id": "https://dnv-opensource.github.io/si-schema/si_schema.schema.json",
-  "version": "0.0.7a2"
+  "version": "0.0.7a3"
 }
