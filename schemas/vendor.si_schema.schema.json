@@ -1,0 +1,1081 @@
+{
+  "$defs": {
+    "ArtifactMeta": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_id": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Artifact Id"
+        },
+        "role": {
+          "$ref": "#/$defs/ArtifactRole",
+          "default": "si_internal"
+        },
+        "status": {
+          "$ref": "#/$defs/ArtifactStatus",
+          "default": "draft"
+        },
+        "contract_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Contract Version"
+        },
+        "compatibility": {
+          "$ref": "#/$defs/CompatibilityClass",
+          "default": "none"
+        },
+        "published_at": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Published At"
+        },
+        "supersedes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Supersedes"
+        },
+        "intended_consumers": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Intended Consumers",
+          "type": "array"
+        },
+        "lifecycle_state": {
+          "$ref": "#/$defs/LifecycleState",
+          "default": "active"
+        },
+        "deprecated_at": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Deprecated At"
+        },
+        "sunset_at": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sunset At"
+        },
+        "replaced_by": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Replaced By"
+        }
+      },
+      "title": "ArtifactMeta",
+      "type": "object"
+    },
+    "ArtifactRole": {
+      "enum": [
+        "si_internal",
+        "integration_contract",
+        "exchange_projection"
+      ],
+      "title": "ArtifactRole",
+      "type": "string"
+    },
+    "ArtifactStatus": {
+      "enum": [
+        "draft",
+        "released",
+        "deprecated",
+        "withdrawn"
+      ],
+      "title": "ArtifactStatus",
+      "type": "string"
+    },
+    "CompatibilityClass": {
+      "enum": [
+        "none",
+        "backward",
+        "forward",
+        "full"
+      ],
+      "title": "CompatibilityClass",
+      "type": "string"
+    },
+    "Component": {
+      "additionalProperties": false,
+      "description": "Replaces legacy System (\u00a74). Execution host and interface container.",
+      "properties": {
+        "id": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "modes": {
+          "items": {
+            "$ref": "#/$defs/Mode"
+          },
+          "title": "Modes",
+          "type": "array"
+        },
+        "modules": {
+          "items": {
+            "$ref": "#/$defs/Module"
+          },
+          "title": "Modules",
+          "type": "array"
+        },
+        "ports": {
+          "items": {
+            "$ref": "#/$defs/Port"
+          },
+          "title": "Ports",
+          "type": "array"
+        },
+        "vendor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Vendor"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ],
+      "title": "Component",
+      "type": "object"
+    },
+    "Direction": {
+      "enum": [
+        "IN",
+        "OUT"
+      ],
+      "title": "Direction",
+      "type": "string"
+    },
+    "DiscreteEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "raw": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "title": "Raw"
+        },
+        "meaning": {
+          "title": "Meaning",
+          "type": "string"
+        }
+      },
+      "required": [
+        "raw",
+        "meaning"
+      ],
+      "title": "DiscreteEntry",
+      "type": "object"
+    },
+    "DiscreteMapping": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "discrete",
+          "default": "discrete",
+          "title": "Kind",
+          "type": "string"
+        },
+        "entries": {
+          "items": {
+            "$ref": "#/$defs/DiscreteEntry"
+          },
+          "minItems": 1,
+          "title": "Entries",
+          "type": "array"
+        }
+      },
+      "required": [
+        "entries"
+      ],
+      "title": "DiscreteMapping",
+      "type": "object"
+    },
+    "Function": {
+      "additionalProperties": false,
+      "description": "Unified hierarchical function entity (\u00a77). No system/component-level split.",
+      "properties": {
+        "id": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "component_id": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Component Id",
+          "type": "string"
+        },
+        "modes": {
+          "items": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Modes",
+          "type": "array"
+        },
+        "input_signals": {
+          "items": {
+            "$ref": "#/$defs/Signal"
+          },
+          "title": "Input Signals",
+          "type": "array"
+        },
+        "output_signals": {
+          "items": {
+            "$ref": "#/$defs/Signal"
+          },
+          "title": "Output Signals",
+          "type": "array"
+        },
+        "parameters": {
+          "items": {
+            "$ref": "#/$defs/Parameter"
+          },
+          "title": "Parameters",
+          "type": "array"
+        },
+        "function_description": {
+          "description": "Required free text describing function behavior for SI mapping. Include applicable standards and references (e.g., DNV-RP-0684 Annex A, SysML v2, or domain-specific standards) with relevant version, section, and constraint details.",
+          "minLength": 1,
+          "title": "Function Description",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "component_id",
+        "modes",
+        "function_description"
+      ],
+      "title": "Function",
+      "type": "object"
+    },
+    "LifecycleState": {
+      "enum": [
+        "active",
+        "deprecated",
+        "withdrawn"
+      ],
+      "title": "LifecycleState",
+      "type": "string"
+    },
+    "LinearMapping": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "linear",
+          "default": "linear",
+          "title": "Kind",
+          "type": "string"
+        },
+        "raw": {
+          "$ref": "#/$defs/RangeEndpoint"
+        },
+        "physical": {
+          "$ref": "#/$defs/RangeEndpoint"
+        },
+        "ramp": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ramp"
+        }
+      },
+      "required": [
+        "raw",
+        "physical"
+      ],
+      "title": "LinearMapping",
+      "type": "object"
+    },
+    "Mode": {
+      "additionalProperties": false,
+      "description": "Vendor-defined component mode definition, referenced by functions.",
+      "properties": {
+        "id": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Name"
+        },
+        "description": {
+          "minLength": 1,
+          "title": "Description",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "description"
+      ],
+      "title": "Mode",
+      "type": "object"
+    },
+    "Module": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Name"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "Module",
+      "type": "object"
+    },
+    "Parameter": {
+      "additionalProperties": false,
+      "description": "Typed parameter entry on a function.",
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "type": {
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "type"
+      ],
+      "title": "Parameter",
+      "type": "object"
+    },
+    "Party": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/PartyKind",
+          "default": "vendor"
+        },
+        "role": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Role"
+        },
+        "contact": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Contact"
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ],
+      "title": "Party",
+      "type": "object"
+    },
+    "PartyKind": {
+      "enum": [
+        "vendor",
+        "integrator",
+        "shipyard",
+        "shipowner",
+        "class_society",
+        "analytics_provider",
+        "operator"
+      ],
+      "title": "PartyKind",
+      "type": "string"
+    },
+    "Port": {
+      "additionalProperties": false,
+      "description": "First-class interface endpoint on a Component (\u00a76).",
+      "properties": {
+        "id": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "direction": {
+          "$ref": "#/$defs/PortDirection"
+        },
+        "module_id": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Module Id"
+        },
+        "terminals": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Terminals",
+          "type": "array"
+        },
+        "port_type": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PortType"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "protocol": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Protocol"
+        },
+        "attributes": {
+          "additionalProperties": true,
+          "title": "Attributes",
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "direction"
+      ],
+      "title": "Port",
+      "type": "object"
+    },
+    "PortDirection": {
+      "enum": [
+        "in",
+        "out",
+        "undefined"
+      ],
+      "title": "PortDirection",
+      "type": "string"
+    },
+    "PortType": {
+      "enum": [
+        "Signal",
+        "CAN-TC",
+        "Analog",
+        "Resistor",
+        "4-20mA",
+        "0-10V",
+        "Serial",
+        "Network"
+      ],
+      "title": "PortType",
+      "type": "string"
+    },
+    "ProjectMeta": {
+      "additionalProperties": false,
+      "properties": {
+        "project_id": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "project_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Project Name"
+        },
+        "schema_version": {
+          "default": "0.0.6",
+          "enum": [
+            "0.0.4",
+            "0.0.5",
+            "0.0.6"
+          ],
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "client": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Client"
+        },
+        "vessel_type": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Vessel Type"
+        },
+        "revision": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Revision"
+        },
+        "date": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Date"
+        }
+      },
+      "required": [
+        "project_id"
+      ],
+      "title": "ProjectMeta",
+      "type": "object"
+    },
+    "RangeEndpoint": {
+      "additionalProperties": false,
+      "properties": {
+        "low": {
+          "title": "Low",
+          "type": "number"
+        },
+        "high": {
+          "title": "High",
+          "type": "number"
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Unit"
+        }
+      },
+      "required": [
+        "low",
+        "high"
+      ],
+      "title": "RangeEndpoint",
+      "type": "object"
+    },
+    "Signal": {
+      "additionalProperties": false,
+      "description": "Project-level signal definition (\u00a79).",
+      "properties": {
+        "id": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "signal_type": {
+          "$ref": "#/$defs/SignalType"
+        },
+        "category": {
+          "$ref": "#/$defs/SignalCategory"
+        },
+        "subtype": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Subtype",
+          "type": "array"
+        },
+        "processing": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SignalProcessing"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "attributes": {
+          "additionalProperties": true,
+          "title": "Attributes",
+          "type": "object"
+        },
+        "value_mapping": {
+          "anyOf": [
+            {
+              "discriminator": {
+                "mapping": {
+                  "discrete": "#/$defs/DiscreteMapping",
+                  "linear": "#/$defs/LinearMapping"
+                },
+                "propertyName": "kind"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/DiscreteMapping"
+                },
+                {
+                  "$ref": "#/$defs/LinearMapping"
+                }
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value Mapping"
+        },
+        "vendor_io_mappings": {
+          "items": {
+            "$ref": "#/$defs/VendorIOMapping"
+          },
+          "title": "Vendor Io Mappings",
+          "type": "array"
+        },
+        "assumed": {
+          "default": false,
+          "title": "Assumed",
+          "type": "boolean"
+        },
+        "source_doc_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Doc Ref"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "signal_type",
+        "category"
+      ],
+      "title": "Signal",
+      "type": "object"
+    },
+    "SignalCategory": {
+      "enum": [
+        "command",
+        "permission/interlock",
+        "feedback",
+        "safety",
+        "mode",
+        "monitoring"
+      ],
+      "title": "SignalCategory",
+      "type": "string"
+    },
+    "SignalProcessing": {
+      "additionalProperties": false,
+      "properties": {
+        "filtered": {
+          "default": false,
+          "title": "Filtered",
+          "type": "boolean"
+        },
+        "delay_ms": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Delay Ms"
+        },
+        "moving_average_window": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Moving Average Window"
+        }
+      },
+      "title": "SignalProcessing",
+      "type": "object"
+    },
+    "SignalType": {
+      "enum": [
+        "Digital",
+        "Analog",
+        "CAN",
+        "I2C",
+        "1-wire",
+        "UART"
+      ],
+      "title": "SignalType",
+      "type": "string"
+    },
+    "VendorIOMapping": {
+      "additionalProperties": false,
+      "properties": {
+        "party_id": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Party Id",
+          "type": "string"
+        },
+        "item": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Item"
+        },
+        "direction": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Direction"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "signal_type": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Signal Type"
+        },
+        "terminals": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Terminals",
+          "type": "array"
+        },
+        "details": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Details"
+        },
+        "logic": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Logic"
+        },
+        "revision": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Revision"
+        }
+      },
+      "required": [
+        "party_id"
+      ],
+      "title": "VendorIOMapping",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Vendor-subset si-schema document.\n\nContains only the entities a component vendor is expected to populate\nand return to the system integrator. Excludes SI-only concerns such as\nconnections, contract-layer entities, and legacy system topology.",
+  "properties": {
+    "artefact": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ArtifactMeta"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "project": {
+      "$ref": "#/$defs/ProjectMeta"
+    },
+    "parties": {
+      "items": {
+        "$ref": "#/$defs/Party"
+      },
+      "title": "Parties",
+      "type": "array"
+    },
+    "components": {
+      "items": {
+        "$ref": "#/$defs/Component"
+      },
+      "title": "Components",
+      "type": "array"
+    },
+    "functions": {
+      "items": {
+        "$ref": "#/$defs/Function"
+      },
+      "title": "Functions",
+      "type": "array"
+    },
+    "signals": {
+      "items": {
+        "$ref": "#/$defs/Signal"
+      },
+      "title": "Signals",
+      "type": "array"
+    },
+    "glossary": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "Glossary",
+      "type": "object"
+    }
+  },
+  "required": [
+    "project"
+  ],
+  "title": "VendorSISchema",
+  "type": "object",
+  "$id": "https://dnv-opensource.github.io/si-schema/vendor.si_schema.schema.json",
+  "version": "0.0.7a2"
+}

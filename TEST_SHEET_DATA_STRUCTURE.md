@@ -3,6 +3,74 @@
 Companion to [`PLAN.md`](PLAN.md). Defines the schema customers fill in.
 A worked example is in [`customer_example.yaml`](customer_example.yaml).
 
+> **Revision 0.6 changes (2026-06-13)** — lineage, lifecycle governance,
+> semantic bridge, and compatibility diff
+>
+> Added optional contract-governance and interoperability fields aligned with
+> the broader ship integration contract direction.
+>
+> New additions:
+>
+> - `artefact.artifact_id`, `artefact.lifecycle_state`,
+>   `artefact.deprecated_at`, `artefact.sunset_at`, `artefact.replaced_by`
+> - `function.lifecycle_state` (+ deprecation metadata)
+> - `signal.lifecycle_state` (+ deprecation metadata)
+> - semantic bridge fields on `signal`: `quantity`, `semantic_class`,
+>   `vis_local_id`, `unit_iri`, `provenance`, `processing`
+> - `lineages` top-level model with `signal_ref` + ordered `hops`
+>   (`actor`, `rule`, `rule_params`, `input_contract`, `output_contract`)
+>
+> Added validation rules:
+>
+> - `SIG018` — artefact lifecycle state coherence
+> - `SIG019` — deprecated/withdrawn lifecycle requirements on artefact,
+>   function, and signal
+> - `SIG020` — lineage integrity (actor existence, contiguous steps,
+>   chain continuity)
+>
+> Added CLI support:
+>
+> - `si-schema diff-contract old.yaml new.yaml` to produce machine-readable
+>   compatibility diff report.
+
+> **Revision 0.5 changes (2026-06-13)** — broader ship integration
+> contract direction
+>
+> The schema now introduces optional contract-level objects so SI projects can
+> evolve from signal-only test sheets toward interface-centric integration
+> contracts while keeping backward compatibility for existing rev-0.4 files.
+>
+> Added optional top-level entities:
+>
+> - `artefact` (`ArtifactMeta`) — artifact role, status, compatibility,
+>   release metadata
+> - `parties` (`list[Party]`) — generalized actors beyond vendors
+> - `protocol_bindings` (`list[ProtocolBinding]`) — explicit Level-3 protocol
+>   contracts
+> - `mode_definitions` (`list[ModeDefinition]`) — operating mode definitions
+> - `authority_rules` (`list[AuthorityRule]`) — command ownership/arbitration
+> - `alarm_definitions` (`list[AlarmDefinition]`) — alarm behavior semantics
+> - `interfaces` (`list[Interface]`) — top-level interface contract boundary
+> - `acceptance_cases` (`list[AcceptanceCase]`) — FAT/SAT-oriented acceptance
+>   semantics
+>
+> Added optional signal-level references:
+>
+> - `signal.producer`
+> - `signal.interface_ref`
+> - `signal.protocol_binding_ref`
+> - `signal.mode_ref`
+> - `signal.alarm_ref`
+>
+> Added validation rules:
+>
+> - `SIG014` — released artifact requires `contract_version` and
+>   `published_at`
+> - `SIG015` — `signal.producer` must reference known party/vendor
+> - `SIG016` — new object references must resolve
+> - `SIG017` — interface/acceptance signal links must resolve to
+>   `(function_no, signal_id)`
+
 > **Revision 0.4 changes (2026-05-15)** — internal SI workflow fields
 >
 > Two new optional fields added to `Signal`, used by the SI Data Explorer
@@ -20,12 +88,8 @@ A worked example is in [`customer_example.yaml`](customer_example.yaml).
 >
 > **Revision 0.3 changes (2026-05-14)**
 >
-> - Added required `signal.expected_value` — the assume-and-guarantee target
->   value used to derive a pass/fail verdict for the corresponding test
->   step. Shape mirrors `value_mapping`. See §10c.
-> - Added validation rule SIG013: `expected_value` MUST be part of the
->   `value_mapping` range (discrete: enumerated entry; linear: inside the
->   `[low, high]` interval, inclusive, with matching units).
+> - Added richer signal mapping semantics and validation guidance for
+>   `value_mapping` in both discrete and linear forms.
 >
 > **Revision 0.2 changes (2026-05-14)** — based on shipyard feedback and
 > vendor IO datasheets `Screenshot 2026-05-14 152025.png` (DO) and
@@ -51,13 +115,32 @@ A worked example is in [`customer_example.yaml`](customer_example.yaml).
 
 ## 1. Top level
 
-| Field        | Type             | Required | Description                                           |
-|--------------|------------------|----------|-------------------------------------------------------|
-| `project`    | `ProjectMeta`    | yes      | Project identifiers.                                  |
-| `vendors`    | `list[Vendor]`   | no       | Vendor registry referenced by `vendor_io_mappings[]`. |
-| `systems`    | `list[System]`   | yes      | All systems/components referenced anywhere.           |
-| `functions`  | `list[Function]` | yes      | Every function to be tested.                          |
-| `glossary`   | `dict[str, str]` | no       | Acronym expansions.                                   |
+| Field        | Type               | Required | Description                                           |
+|--------------|--------------------|----------|-------------------------------------------------------|
+| `project`    | `ProjectMeta`      | yes      | Project identifiers.                                  |
+| `parties`    | `list[Party]`      | no       | Party registry referenced by `vendor_io_mappings[]`.  |
+| `components` | `list[Component]`  | yes      | All integration components referenced anywhere.       |
+| `connections`  | `list[Connection]`   | yes      | Connectivity model across ports/components. |
+| `functions`  | `list[Function]`   | yes      | Every function to be tested.                          |
+| `signals`    | `list[Signal]`     | yes      | Project-level signal registry.                        |
+| `glossary`   | `dict[str, str]`   | no       | Acronym expansions.                                   |
+
+### 1A. Contract-level optional entities (rev 0.0.5)
+
+These entities are optional in rev 0.0.5 but provide the structure needed for
+interface-centric ship integration contracts.
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `artefact` | `ArtifactMeta` | no | Artifact role/status/version metadata for release governance. |
+| `parties` | `list[Party]` | no | Actors involved in production, integration, operation, and analytics. |
+| `protocol_bindings` | `list[ProtocolBinding]` | no | Protocol-level data contract details (family, transport, exchange pattern, timing). |
+| `mode_definitions` | `list[ModeDefinition]` | no | Reusable operating mode definitions. |
+| `authority_rules` | `list[AuthorityRule]` | no | Command ownership and arbitration rules. |
+| `alarm_definitions` | `list[AlarmDefinition]` | no | Alarm semantics (priority, latching, ack/reset, visibility). |
+| `interfaces` | `list[Interface]` | no | Interface contract boundaries with endpoint refs and signal membership. |
+| `acceptance_cases` | `list[AcceptanceCase]` | no | Acceptance criteria and witness-oriented test semantics. |
+| `lineages` | `list[Lineage]` | no | Multi-party transformation chain per signal (`function_no` + `signal_id`). |
 
 > **Serialisation.** The schema is defined as a Pydantic / JSON Schema model
 > and is **serialisation-agnostic**. YAML is the recommended authoring format
@@ -72,249 +155,289 @@ A worked example is in [`customer_example.yaml`](customer_example.yaml).
 
 | Field           | Type   | Required | Notes                                          |
 |-----------------|--------|----------|------------------------------------------------|
-| `name`          | `str`  | yes      | e.g. `Electric Propulsion System`.             |
-| `customer`      | `str`  | yes      | e.g. `Shipyard A`.                             |
-| `vessel_class`  | `str`  | no       | e.g. `LNG carrier 174k`.                       |
-| `revision`      | `str`  | yes      | Semantic-version-like, e.g. `0.3.0`.           |
-| `revision_date` | `date` | yes      | ISO-8601.                                      |
-| `notes`         | `str`  | no       | Free text.                                     |
+| `project_id`    | `str` (slug)  | yes      | Stable project key, e.g. `eps_demo`.           |
+| `project_name`  | `str`  | no       | Human-readable project title.                  |
+| `schema_version`| `str`  | no       | `0.0.4`, `0.0.5`, or `0.0.6` (default `0.0.6`). |
+| `client`        | `str`  | no       | Shipyard or customer name.                     |
+| `vessel_type`   | `str`  | no       | Vessel classification string.                  |
+| `revision`      | `str`  | no       | Project revision label.                        |
+| `date`          | `date` | no       | ISO-8601.                                      |
 
 ```yaml
 project:
-  name: Electric Propulsion System
-  customer: Shipyard A
-  vessel_class: LNG Carrier
+  project_id: eps_demo
+  project_name: Electric Propulsion System
+  schema_version: "0.0.6"
+  client: Shipyard A
+  vessel_type: LNG Carrier
   revision: 0.2.0
-  revision_date: 2026-05-14
-  notes: Initial intake based on customer function-sequence slides.
+  date: 2026-05-14
 ```
 
-## 3. `Vendor`
+## 3. `Party`
 
-Used to scope vendor IO tag conventions. Adding a vendor is optional, but
-once any signal has `vendor_io_mappings[]`, the referenced `vendor_id` must
-exist here.
+Used to scope vendor IO tag conventions and identify integration parties.
+Adding a party is optional, but once any signal has `vendor_io_mappings[]`,
+the referenced `party_id` must exist here.
 
 | Field      | Type   | Required | Notes                                       |
 |------------|--------|----------|---------------------------------------------|
-| `id`       | `str`  | yes      | Stable cross-reference, e.g. `VENDOR_A_VFD`.|
+| `id`       | `str` (slug) | yes | Stable cross-reference, e.g. `VFD_VENDOR`.  |
 | `name`     | `str`  | yes      | Display name, e.g. `Vendor A Variable Speed Drive`. |
-| `system_id`| `str`  | no       | The system this vendor supplies.            |
-| `notes`    | `str`  | no       | Project version, drawing rev, etc.          |
+| `kind`     | `PartyKind` | no  | `vendor`, `integrator`, `shipyard`, `shipowner`, `class_society`, `analytics_provider`, `operator`. Default `vendor`. |
+| `role`     | `str`  | no       | Free-text role description.                 |
+| `contact`  | `str`  | no       | Contact information.                        |
 
 ```yaml
-vendors:
+parties:
   - id: VFD_VENDOR
     name: VFD vendor (Vendor A · variable-speed drive)
-    system_id: VFD
-    notes: Source — vendor IO datasheet, drawing rev A–C.
+    kind: vendor
+  - id: YARD_INTEGRATOR
+    name: Yard SI Team
+    kind: integrator
 ```
 
-## 4. `System`
+## 4. `Component`
 
-Top-level box on the sequence diagram.
+`Component` replaces the legacy `System` concept. It is the execution host and
+interface container in the integration topology.
 
-| Field     | Type           | Required | Notes                                                    |
-|-----------|----------------|----------|----------------------------------------------------------|
-| `id`      | `str` (slug)   | yes      | Stable identifier used for cross-references, e.g. `RCS`. |
-| `name`    | `str`          | yes      | Display name, e.g. `Remote Control System`.              |
-| `vendor`  | `str`          | no       | Free-text vendor; for IO mapping use `Vendor.id`.        |
-| `modules` | `list[Module]` | no       | Sub-boxes inside the system.                             |
-| `notes`   | `str`          | no       |                                                          |
+| Field | Type | Required | Notes |
+|---|---|---|---|
+| `id` | `str` (slug) | yes | Stable cross-reference key, e.g. `RCS`. |
+| `name` | `str` | yes | Display name. |
+| `modes` | `list[Mode]` | no | Vendor-owned canonical mode catalog for this component. |
+| `modules` | `list[Module]` | no | Physical/logical subdivisions. |
+| `ports` | `list[Port]` | no | Interface endpoints used for connection and signal semantics. |
+| `vendor` | `str` | no | Free-text or mapped vendor identifier. |
+| `notes` | `str` | no | Free text. |
+
+The ownership boundary is important:
+
+- **Vendor responsibility:** define the component's canonical modes and the
+  vendor function preconditions that depend on those modes, and signal-level
+  interface semantics required for SI mapping.
+- **System-integrator responsibility:** compose vendor-provided component-level
+  functions/signals into system-level behavior and architecture (including
+  Connection and SysML v2 artifacts).
 
 ```yaml
-systems:
+components:
   - id: RCS
-    name: Remote Control System
-    vendor: Vendor A
+    name: Remote Control Component
+    modes:
+      - id: remote
+        name: Remote
+        description: Remote command ownership active.
+      - id: local
+        name: Local
+        description: Local panel command ownership active.
     modules:
-      - { id: Main,   name: "Main System",   role: "Primary remote controller" }
-      - { id: Backup, name: "Backup System", role: "Backup remote controller"  }
-
-  - id: TCS
-    name: Thruster Control System
-    vendor: Vendor B
-    modules:
-      - { id: ACU, name: "ACU", role: "Azimuth Thruster Control Unit" }
-      - { id: HPS, name: "HPS", role: "Hydraulic Pump Starter"        }
+      - { id: Main, name: "Main Controller", description: "Primary" }
+      - { id: Backup, name: "Backup Controller", description: "Redundant" }
+    ports:
+      - id: cmd_out
+        direction: out
+        port_type: Signal
+        protocol: hardwired
+      - id: status_in
+        direction: in
+        terminals: [X1-02]
 ```
+
+### 4A. `Mode`
+
+Each `Mode` is one canonical vendor-defined operating mode on a component.
+
+| Field | Type | Required | Notes |
+|---|---|---|---|
+| `id` | `str` (slug) | yes | Stable key for SI references, e.g. `remote`. |
+| `name` | `str` | no | Display label. |
+| `description` | `str` | yes | Required semantics for the mode. |
 
 ## 5. `Module`
 
 > **Definition.** A `Module` represents a **physical or logical subdivision
-> of a `System`**. The exact meaning is intentionally flexible and project-
-> specific: it may be a physical controller (e.g. `Main` / `Backup`), a
-> software component, a functional partition (e.g. `ACU` inside `TCS`), or
-> any other useful grouping that needs to appear as a distinct lane on the
-> sequence diagram or as a distinct endpoint on the IO classification table.
+> of a `Component`**. It may be a physical controller, a software unit, or a
+> functional partition that must be represented independently.
 
 | Field  | Type         | Required | Notes                                  |
 |--------|--------------|----------|----------------------------------------|
-| `id`   | `str` (slug) | yes      | Unique within the parent system.       |
+| `id`   | `str` (slug) | yes      | Unique within the parent component.    |
 | `name` | `str`        | yes      | e.g. `Main`, `Backup`, `ACU`, `HPS`.   |
-| `role` | `str`        | no       | Free text — e.g. `Primary controller`. |
+| `description` | `str` | no       | Free text — e.g. `Primary controller`. |
 
-```yaml
-# Inside a System.modules[]:
-- { id: ACU, name: "ACU", role: "Azimuth Thruster Control Unit" }
-- { id: HPS, name: "HPS", role: "Hydraulic Pump Starter"        }
-```
+## 6. `Port`
 
-## 6. `Function`
+Port is a dedicated first-class interface entity (industrial recommendation).
 
-Represents one full test-sheet page.
+| Field | Type | Required | Notes |
+|---|---|---|---|
+| `id` | `str` (slug) | yes | Unique within parent component. |
+| `direction` | enum | yes | `in` \| `out` \| `undefined`. |
+| `module_id` | `str` (slug) | no | Optional owning module within the same component. |
+| `terminals` | `list[str]` | no | Terminal or pin mapping. |
+| `port_type` | enum | conditional | Required when `direction=out`; optional for `in` or `undefined`. Values: `Signal`, `CAN-TC`, `Analog`, `Resistor`, `4-20mA`, `0-10V`, `Serial`, `Network`. |
+| `protocol` | enum/string | conditional | Required when `direction=out`; optional for `in` or `undefined`. E.g. `Modbus TCP`, `Modbus RTU`, `OPC-UA`, `hardwired`. |
+| `attributes` | `object` | no | Additional technical metadata. |
 
-| Field               | Type                | Required | Notes                                                       |
-|---------------------|---------------------|----------|-------------------------------------------------------------|
-| `no`                | `str` or `int`      | yes      | Sequence ID. String to allow `4-1` style sub-numbers.       |
-| `name`              | `str`               | yes      | e.g. `VFD Start/Stop (Remote)`.                             |
-| `control_authority` | `str` (system id)   | yes      | The single system that **issues the primary/initiation command** for this function. |
-| `related_systems`   | `list[str]` (ids)   | yes      | All other systems that participate via signals. Must be exhaustive; order is not significant. |
-| `noted`             | `str`               | no       | Header-table "Noted" cell.                                  |
-| `interactions`      | `list[Interaction]` | yes      | Ordered list — drives the sequence diagram.                 |
-| `signals`           | `list[Signal]`      | yes      | Drives the IO classification table.                         |
-| `notes`             | `list[str]`         | no       | Bullet points under "Noted".                                |
+Ontology semantics tied to Port:
+
+- `connectedTo`: Port -> Port
+- `actUpon`: Port -> Signal
+- `isActedUponBy`: Signal -> Port (derived inverse)
+
+### 6A. Ontology relation catalog
+
+Industrial best practice is to keep **predicate relations** separate from
+ordinary schema references.
+
+#### Core ontology predicates
+
+| Relation | Domain | Range | Bound in schema | Notes |
+|---|---|---|---|---|
+| `connectedTo` | `Port` | `Port` | `connections[*].from_port_ref` / `connections[*].to_port_ref` | Physical or logical connectivity edge. |
+| `actUpon` | `Port` | `Signal` | `Port.attributes.actUpon` | Port processes/transmits/consumes the signal. |
+| `isActedUponBy` | `Signal` | `Port` | derived from `actUpon` | Inverse relation; not authored directly. |
+
+#### Schema reference bindings used with the ontology layer
+
+These are not RDF predicates, but they are the key cross-object bindings used
+for SI function mapping.
+
+| Binding | From | To | Bound in schema | Notes |
+|---|---|---|---|---|
+| `component_id` | `Function` | `Component` | `Function.component_id` | ID of the component the function is allocated to (if already allocated). |
+
+## 7. `Function`
+
+One unified hierarchical function entity. No separate system-level/component-
+level function types.
+
+| Field | Type | Required | Notes |
+|---|---|---|---|
+| `id` | `str` (slug) | yes | Stable function identifier. |
+| `name` | `str` | yes | Display name. |
+| `component_id` | `str` | yes | ID of the component this function is allocated to, if already allocated. |
+| `modes` | `list[str]` | yes | References to `Component.modes[*].id` for the function's component. |
+| `input_signals` | `list[Signal]` | no | Signals consumed by the function. |
+| `output_signals` | `list[Signal]` | no | Signals produced by the function. |
+| `parameters` | `list[Parameter]` | no | Function parameters with fields `name` and `type`. |
+| `function_description` | `str` | yes | Required vendor free text describing function behavior for SI mapping. Include applicable standards and references (e.g., DNV-RP-0684 Annex A, SysML v2, or domain-specific standards) with relevant version, section, and constraint details. |
+
+`Function` is the central mapping entity in SI-schema:
+
+- Vendor input must describe real operational behavior in `function_description`.
+- Only **one allocated component_id** is allowed per function.
+- SI maps system-level intent to component-level behavior using function metadata and free text.
 
 ```yaml
 functions:
-  - no: 1
-    name: Hydraulic Pump Start/Stop
-    control_authority: RCS
-    related_systems: [TCS]
-    noted: ""
-    interactions: [...]   # see §7
-    signals:      [...]   # see §8
-    notes:
-      - "SC = Start Condition (precondition/interlock)."
-      - "TC = Trip Condition."
+  - id: fn.rcs_vfd_start
+    name: RCS orchestrated VFD start
+    component_id: RCS
+    modes:
+      - remote
+    input_signals:
+      - id: start_cmd
+        name: START COMMAND
+        signal_type: Digital
+        category: command
+    output_signals:
+      - id: pump_running
+        name: PUMP RUNNING
+        signal_type: Digital
+        category: feedback
+    parameters:
+      - name: start_timeout_ms
+        type: int
+    function_description: |
+      Validate start permissives, issue start/stop command logic,
+      and describe dependencies, limits, and failure behavior.
 ```
 
-> **YAML gotcha.** PyYAML loads the unquoted key `no:` as the boolean
-> `False` (YAML 1.1). Quote the key (`"no": 1`) or rename the field to
-> `function_no` if you want round-trip safety with strict YAML loaders.
+### 7A. Function Mode References
 
-## 7. `Interaction` (one arrow on the sequence diagram)
+Each function mode entry references one canonical mode on the allocated component.
 
-| Field         | Type            | Required | Notes                                                  |
-|---------------|-----------------|----------|--------------------------------------------------------|
-| `order`       | `int`           | yes      | Render order, top to bottom.                           |
-| `from_ref`    | `SystemRef`     | yes      | `{system_id, module_id?}`.                             |
-| `to_ref`      | `SystemRef`     | yes      | `{system_id, module_id?}`.                             |
-| `link_type`   | `LinkType` enum | yes      | `hardwired` \| `serial` \| `network` \| `wireless`.    |
-| `label`       | `str`           | yes      | Arrow label, e.g. `(1) HYD. Pump Start/Stop Command`.  |
-| `signal_refs` | `list[str]`     | no       | IDs of `Signal` rows realised by this interaction.     |
+| Field | Type | Required | Notes |
+|---|---|---|---|
+| `mode_id` | `str` (slug) | yes | Must match a value in `Component.modes[*].id` for `function.component_id`. |
 
-```yaml
-interactions:
-  - order: 1
-    from_ref: { system_id: TCS, module_id: HPS }
-    to_ref:   { system_id: RCS, module_id: Main }
-    link_type: hardwired
-    label: "(SC) HYD. Pump Starter Remote Ctrl Ready"
-    signal_refs: [sc_ready]
+## 8. `Connection`
 
-  - order: 2
-    from_ref: { system_id: RCS, module_id: Main }
-    to_ref:   { system_id: TCS, module_id: HPS }
-    link_type: hardwired
-    label: "(1) HYD. Pump Start/Stop Command"
-    signal_refs: [start_cmd, stop_cmd]
-```
+`Connection` models a directed connectivity edge between interface endpoints.
+Each connection transmits exactly one signal.
 
-## 8. `Signal` (one row in the IO classification table)
+| Field | Type | Required | Notes |
+|---|---|---|---|
+| `id` | `str` (slug) | yes | Connection ID. |
+| `from_port_ref` | `str` | yes | Fully qualified source port reference. |
+| `to_port_ref` | `str` | yes | Fully qualified target port reference. |
+| `connection_type` | enum | yes | `physical` \| `logical` \| `control` \| `data` (project profile). |
+| `signal` | `str` | yes | Signal ID transmitted through this connection. |
+| `properties` | `object` | no | Optional additional metadata. |
 
-| Field                 | Type                       | Required | Notes |
-|-----------------------|----------------------------|----------|-------|
-| `id`                  | `str` (slug)               | yes      | Unique within the function. |
-| `signal_order`        | `str`                      | yes      | `SC`, `TC`, `1`, `1-Main`, `1-Backup`, `1-Start`, `1-Stop`, ... |
-| `signal_name`         | `str`                      | yes      | **Vendor-neutral logical name** (NOT an IO tag). e.g. `START COMMAND OF HYDRAULIC PUMP`. ALL CAPS by convention. |
-| `from_system`         | `str` (system id)          | yes      |       |
-| `from_module`         | `str` (module id)          | no       | Empty cell allowed in source sheets. |
-| `to_system`           | `str` (system id)          | yes      |       |
-| `to_module`           | `str` (module id)          | no       |       |
-| `function_category`   | `FunctionCategory`         | yes      | One of the 6 top-level categories (see §9). |
-| `function_subcategory`| `str`                      | no       | Free-text refinement, normalised against the suggested vocabulary in §9. e.g. `Start/Stop`, `Speed reference`, `Start Permission`. |
-| `data_type`           | `DataType`                 | yes      | `digital` \| `analog_4_20mA` \| `analog_0_10V` \| `analog_potentiometer` \| `serial` \| `network`. |
-| `subtype`             | `list[SignalSubtype]`      | no       | Digital: `NO` \| `NC` \| `steady` \| `pulse`. Analog: `sine_cosine` \| `single_ended` \| `differential`. Multiple values allowed. |
-| `unit`                | `str`                      | no       | e.g. `mA`, `V`, `rpm`, `bar`. |
-| `range`               | `str`                      | no       | e.g. `0–100 %`, `4–20 mA`. |
-| `value_mapping`       | `ValueMapping`             | no       | Structured raw → physical mapping. See §10. |
-| `expected_value`      | `ExpectedValue`            | yes      | Assume-and-guarantee target value for this signal. Shape mirrors `value_mapping`. See §10c. |
-| `value_description`   | `str`                      | no       | Free-text description of what the values mean in operation. |
-| `pulse_shape`         | `PulseShape`               | no       | Required when `subtype` includes `pulse`. See §11. |
-| `vendor_io_mappings`  | `list[VendorIOMapping]`    | no       | Per-vendor IO tag bindings. See §12. |
-| `notes`               | `str`                      | no       | Per-signal clarification. |
-| `assumed`             | `bool`                     | no       | **Rev 0.4.** Default `false`. `true` ⇒ value was inferred (not extracted verbatim from a vendor doc). Drives the *needs SI confirmation* badge. |
-| `source_doc_ref`      | `str`                      | no       | **Rev 0.4.** Pointer back to the source-doc fragment, e.g. `vfd_io_datasheet_revC.pdf#p4`. Free text. |
+## 9. `Signal`
+
+| Field | Type | Required | Notes |
+|---|---|---|---|
+| `id` | `str` (slug) | yes | Stable signal ID. |
+| `name` | `str` | yes | Vendor-neutral signal name. |
+| `signal_type` | enum | yes | `Digital`, `Analog`, `CAN`, `I2C`, `1-wire`, `UART`. |
+| `category` | enum | yes | `command`, `permission/interlock`, `feedback`, `safety`, `mode`, `monitoring`. |
+| `subtype` | `list[str]` | no | E.g. `NC`, `NO`, `Pulse`. |
+| `processing` | `object` | no | `filtered`, `delay`, `moving_average`. |
+| `attributes` | `object` | no | Scaling, sampling, fail-safe, redundancy, sync/async, compatibility notes. |
+| `value_mapping` | `ValueMapping` | no | Optional raw/physical mapping. |
 
 ```yaml
-# Digital command signal with subcategory, subtype, value mapping and pulse shape:
 signals:
-  - id: start_cmd
-    signal_order: 1-Start
-    signal_name: "START COMMAND OF HYDRAULIC PUMP"
-    from_system: RCS
-    from_module: Main
-    to_system: TCS
-    to_module: HPS
-    function_category: Command
-    function_subcategory: "Start/Stop"
-    data_type: digital
-    subtype: [NO, pulse]
-    value_mapping:
-      kind: discrete
-      entries:
-        - { raw: 0, meaning: "no command" }
-        - { raw: 1, meaning: "start request" }
-    expected_value:
-      raw: 1
-      meaning: "start request"
-    pulse_shape:
-      width_ms: 500
+  - id: engine_speed_cmd
+    name: ENGINE SPEED COMMAND
+    signal_type: Analog
+    category: command
+    processing:
+      filtered: false
+      delay_ms: 0
+      moving_average_window: null
+    attributes:
+      scaling: 1.0
+      sampling_interval_ms: 100
+      fail_safe_mode: hold_last
+      sync_mode: sync
+```
       pulse_count: 1
     value_description: "Single 500 ms pulse triggers the start sequence."
 
 # Analog command signal with linear mapping and a vendor IO row:
   - id: speed_setpoint
-    signal_order: "1"
-    signal_name: "SPEED SETPOINT"
-    from_system: RCS
-    from_module: Main
-    to_system: VFD
-    to_module: Main
-    function_category: Command
-    function_subcategory: "Speed reference"
-    data_type: analog_4_20mA
-    unit: mA
-    range: "4–20 mA"
+    name: "SPEED SETPOINT"
+    signal_type: Analog
+    category: command
+    subtype: [single_ended]
     value_mapping:
       kind: linear
       raw:      { low: 4, high: 20,   unit: mA  }
       physical: { low: 0, high: 1188, unit: rpm }
       ramp:     "Two-direction turning; ramp up 0–70 %, ramp up 70–100 %"
-    expected_value:
-      raw:      { value: 10,    unit: mA  }
-      physical: { value: 445.5, unit: rpm }
-      meaning: "~37.5 % of full-scale speed reference"
-    value_description: >
+    notes: >
       Motor shaft speed setpoint. When MSC is in speed regulation, the VFD
       follows this setpoint. Loop monitoring by FC; on 0 mA (e.g. wire
       break) the setpoint is frozen and an alarm is raised.
     vendor_io_mappings:
-      - vendor_id:     VFD_VENDOR
+      - party_id:      VFD_VENDOR
         item:          AI00
         direction:     IN
         signal_type:   "4-20mA"
         terminals:     ["-XD04: 01", "-XD04: 02"]
         details:       "Insulation 2.3 kV; Input Impedance 20 Ω"
         logic:         "4 mA = 0 rpm; 20 mA = 1188 rpm; ramp up 0–70 %, 70–100 %"
-        functionality: >
-          When MSC is working in speed regulation, VFD will follow this
-          Speed SP. Loop monitoring by FC.
         revision: A
 ```
 
-## 9. Enums
+## 10. Enums
 
 ### 9.1 `FunctionCategory` — six top-level categories (A–F)
 
@@ -393,6 +516,52 @@ LinkType:
   - network       # Ethernet / fieldbus
   - wireless
 
+SignalType:
+  - Digital
+  - Analog
+  - CAN
+  - I2C
+  - 1-wire
+  - UART
+
+SignalCategory:
+  - command
+  - permission/interlock
+  - feedback
+  - safety
+  - mode
+  - monitoring
+
+PortDirection:
+  - in
+  - out
+  - undefined
+
+PortType:
+  - Signal
+  - CAN-TC
+  - Analog
+  - Resistor
+  - 4-20mA
+  - 0-10V
+  - Serial
+  - Network
+
+ConnectionType:
+  - physical
+  - logical
+  - control
+  - data
+  - status
+
+MappingKind:
+  - discrete
+  - linear
+
+Direction:
+  - IN
+  - OUT
+
 DataType:
   - digital
   - analog_4_20mA
@@ -429,7 +598,7 @@ SignalOrderConvention:
 > schema. Any synonym in source material must be normalised to these two
 > tokens during intake.
 
-## 10. `ValueMapping`
+## 11. `ValueMapping`
 
 Structured raw-signal → physical-quantity mapping. Choose one of two shapes.
 
@@ -462,48 +631,12 @@ value_mapping:
 | `ramp`     | `str`                                   | no          | Free-text ramp description if non-linear. |
 
 > **Revision 0.5 (units separated).** Previous revisions encoded units
-> inline as strings (e.g. `low: "4 mA"`). From rev 0.5 the unit is its
+> inline as strings (e.g. `low: "4 mA"`). From rev 0.0.5 the unit is its
 > own field so that values can be edited and validated as numbers.
 > Loaders SHOULD accept the legacy string shape and split on the first
 > whitespace for backward compatibility; writers MUST emit the new shape.
 
-### 10c. `ExpectedValue` — assume-and-guarantee target
-
-The value that the signal **must** take for the corresponding test step to
-be considered a *pass*. Together with `value_mapping`, this turns the
-signal row into an A/G obligation:
-
-- **assume**  — every other (non-`expected_value`) entry in `value_mapping`
-  is tolerated as input but does not satisfy the test;
-- **guarantee** — the system under test produces / accepts the
-  `expected_value`.
-
-Shape mirrors `value_mapping`:
-
-```yaml
-# Discrete (data_type == digital)
-expected_value:
-  raw: 1
-  meaning: "start request"            # must equal one of value_mapping.entries[*].meaning
-
-# Linear (data_type starts with analog_)
-expected_value:
-  raw:      { value: 10,    unit: mA  }   # must lie within value_mapping.raw.[low, high]
-  physical: { value: 445.5, unit: rpm }   # must lie within value_mapping.physical.[low, high]
-  meaning: "~37.5 % of full-scale"     # optional, free text
-```
-
-| Field      | Type                                 | Required | Notes |
-|------------|--------------------------------------|----------|-------|
-| `raw`      | discrete: `int`/`str`; linear: `{value: number, unit: str}` | yes | Discrete: must match one `value_mapping.entries[*].raw`. Linear: `value` must fall within `value_mapping.raw.[low, high]`; `unit` should match `value_mapping.raw.unit`. |
-| `physical` | linear: `{value: number, unit: str}` | linear only | Physical-quantity equivalent; `value` must fall within `value_mapping.physical.[low, high]`; `unit` should match `value_mapping.physical.unit`. |
-| `meaning`  | `str`                                | discrete — yes; linear — no | Discrete: must equal the `meaning` of the matched entry. Linear: free text. |
-
-> **Range constraint.** `expected_value` MUST be part of the same signal's
-> `value_mapping` range — see validation rule SIG013 in §13. Out-of-range or
-> unit-mismatched expected values are validation **errors**, not warnings.
-
-## 11. `PulseShape`
+## 12. `PulseShape`
 
 Required when `subtype` includes `pulse`.
 
@@ -521,7 +654,7 @@ pulse_shape:
   pulse_count: 1
 ```
 
-## 12. `VendorIOMapping`
+## 13. `VendorIOMapping`
 
 Captures one row of a vendor IO datasheet (see screenshots
 `152025.png` and `161837.png`). One signal may have several mappings — for
@@ -530,7 +663,7 @@ vendor's DI list and on the RCS vendor's DO list.
 
 | Field           | Type   | Required | Notes |
 |-----------------|--------|----------|-------|
-| `vendor_id`     | `str`  | yes      | Must match `Vendor.id`. |
+| `party_id`      | `str` (slug) | yes | Must match `Party.id`. |
 | `item`          | `str`  | yes      | Vendor item code, e.g. `AI00`, `DO17`, `DI11`. |
 | `direction`     | `str`  | no       | `IN` / `OUT` from the vendor's perspective. |
 | `signal_type`   | `str`  | no       | Free text from datasheet, e.g. `4-20mA`, `2 CONTACTS RELAY`, `4 CONTACTS RELAY`. |
@@ -546,7 +679,7 @@ vendor's DI list and on the RCS vendor's DO list.
 ```yaml
 # DO17 — 4-contact relay row from the VFD vendor IO datasheet (rev C):
 vendor_io_mappings:
-  - vendor_id:     VFD_VENDOR
+  - party_id:      VFD_VENDOR
     item:          DO17
     direction:     OUT
     signal_type:   "4 CONTACTS RELAY"
@@ -570,12 +703,12 @@ vendor_io_mappings:
     revision: C
 ```
 
-> Note: `value_mapping` (§10) is the **canonical, vendor-neutral** mapping.
+> Note: `value_mapping` (§11) is the **canonical, vendor-neutral** mapping.
 > The `logic` field on `VendorIOMapping` is the verbatim text from the
 > vendor's datasheet and may be redundant with `value_mapping`. The
 > validator should warn if they disagree.
 
-## 13. Validation rules
+## 14. Validation rules
 
 The Pydantic / JSON Schema layer must enforce the rules below. Each rule
 carries a stable `SIG###` identifier so downstream tools (the Data Explorer,
@@ -584,78 +717,53 @@ Severity is **error** unless noted otherwise.
 
 | ID       | Severity | Rule |
 |----------|----------|------|
-| `SIG001` | error    | Every `system_id` referenced exists in `systems[*].id`. |
-| `SIG002` | error    | Every `module_id` referenced exists inside the named system's `modules`. |
-| `SIG003` | error    | Every `vendor_id` in `signal.vendor_io_mappings[*]` exists in `vendors[*].id`. |
-| `SIG004` | error    | `function.no` is unique within the project. |
-| `SIG005` | error    | `signal.id` is unique within its function. |
-| `SIG006` | error    | Every `interaction.signal_refs[*]` matches an existing `signal.id` in the same function. |
-| `SIG007` | error    | `signal.signal_order` matches the regex `^(SC\|TC\|\d+(-(Main\|Backup\|Start\|Stop))?)$`. |
-| `SIG008` | error / warning | `function_category`, `data_type`, `subtype`, `link_type` are within their respective enums (error). `function_subcategory` should match the suggested vocabulary for the chosen category (warning, not error). |
-| `SIG009` | error    | If `data_type` starts with `analog_` then `value_mapping.kind == "linear"` and both `raw` and `physical` endpoints are provided. |
-| `SIG010` | error    | If `data_type == "digital"` and `value_mapping` is given then `value_mapping.kind == "discrete"`. |
-| `SIG011` | error    | If `subtype` includes `pulse` then `pulse_shape` is provided. |
-| `SIG012` | error    | `control_authority` MUST NOT also appear in `related_systems`. |
-| `SIG013` | error    | `signal.expected_value` is **required** and **must be part of the `value_mapping` range** of the same signal. See expanded discussion below. |
-| `SIG014` | info     | Render the *needs SI confirmation* badge for any signal with `assumed: true`. Surface `source_doc_ref` alongside the badge when present. |
-
-### SIG013 — expanded
-
-`value_mapping` becomes effectively required whenever `expected_value` is
-given (which is always, by this rule). The check has two cases:
-
-- **Discrete (`value_mapping.kind == "discrete"`).**
-  `expected_value.raw` MUST equal exactly one
-  `value_mapping.entries[*].raw`. If `expected_value.meaning` is
-  provided, it MUST equal that entry's `meaning` verbatim. Any
-  `expected_value.raw` that is not enumerated in `entries[*]` is a
-  validation **error**.
-
-- **Linear (`value_mapping.kind == "linear"`).**
-  `expected_value.raw` MUST lie within the closed interval
-  `[value_mapping.raw.low, value_mapping.raw.high]`, and
-  `expected_value.physical` MUST lie within
-  `[value_mapping.physical.low, value_mapping.physical.high]`. Both
-  bounds are inclusive. The numeric comparison must use the unit
-  declared in the corresponding endpoint (e.g. `10 mA` against
-  `4 mA ‥ 20 mA`); a unit mismatch is a validation **error**.
-  `expected_value.meaning` is free text and not range-checked.
-
-Rationale: `expected_value` defines the assume-and-guarantee target for
-the test step, so it must be a value the signal can actually take according
-to its declared mapping. An out-of-range `expected_value` would make the
-test step unreachable.
+| `SIG001` | error    | Every `component_id` reference resolves in `components[*].id`. |
+| `SIG002` | error    | Every `module_id` reference resolves inside the named component's `modules`. |
+| `SIG003` | error    | Every `party_id` in `signal.vendor_io_mappings[*]` exists in `parties[*].id`. |
+| `SIG004` | error    | `function.id` is unique within the project. |
+| `SIG005` | error    | `signal.id` is unique within the project-level signal registry. |
+| `SIG006` | error    | Every `connections[*].signal` matches an existing `signals[*].id`. |
+| `SIG007` | error    | Each `component.modes[*].id` is unique within the component. |
+| `SIG008` | error    | `function.component_id` exists in `components[*].id`. |
+| `SIG014` | error    | A released artefact (`status: released`) must define `contract_version` and `published_at`. |
+| `SIG015` | error    | Every `Connection` must reference valid Port -> Port endpoints. |
+| `SIG016` | error    | `actUpon` links must be Port -> Signal only. |
+| `SIG021` | error    | If `port.direction` is `out`, both `port_type` and `protocol` must be provided. |
+| `SIG022` | error    | Every `function.modes[*]` entry must exist in `component.modes[*].id` for that function's `component_id`. |
+| `SIG023` | error    | If `port.module_id` is set, it must exist in that component's `modules[*].id`. |
+| `SIG024` | error    | If `component.vendor` is set, the referenced `parties[*]` entry must have `kind` equal to `vendor`. |
 
 ---
 
-## 14. Excel front end (optional)
+## 15. Excel front end (optional)
 
-For customers more comfortable with Excel, the same schema maps to **six
+For customers more comfortable with Excel, the same schema maps to **seven
 sheets per workbook**:
 
 | Sheet              | Columns                                                                                  |
 |--------------------|------------------------------------------------------------------------------------------|
-| `Vendors`          | vendor_id, name, system_id, notes                                                        |
-| `Systems`          | system_id, name, vendor, module_id, module_name, module_role, notes                      |
-| `Functions`        | no, name, control_authority, related_systems (comma-sep), noted, notes (bullets joined)  |
-| `Signals`          | function_no, signal_id, signal_order, signal_name, from_system, from_module, to_system, to_module, function_category, function_subcategory, data_type, subtype, unit, range, value_mapping (JSON), expected_value (JSON), value_description, pulse_shape (JSON), notes |
-| `Interactions`     | function_no, order, from_system, from_module, to_system, to_module, link_type, label, signal_refs (comma-sep) |
-| `VendorIOMappings` | function_no, signal_id, vendor_id, item, direction, signal_type, terminals (comma-sep), no_nc, s_p, l_r, details, logic, functionality, revision |
+| `Parties`           | party_id, name, kind, role, contact                                                      |
+| `Components`       | component_id, name, modes (JSON), vendor, module_id, module_name, module_description, port_id, port_direction, port_type, protocol, terminals, notes |
+| `Functions`        | function_id, name, component_id, modes (JSON), input_signals (JSON), output_signals (JSON), parameters (JSON), function_description |
+| `Signals`          | signal_id, name, signal_type, category, subtype, processing (JSON), attributes (JSON), value_mapping (JSON), notes |
+| `Connections`      | connection_id, from_port_ref, to_port_ref, connection_type, signal, properties (JSON) |
+| `Ontology`         | subject_ref, predicate, object_ref, derived (bool), rule_notes |
+| `VendorIOMappings` | function_no, signal_id, party_id, item, direction, signal_type, terminals (comma-sep), details, logic, revision |
 
 A small importer (`pre-processing/test_sheet_intake.py`) converts the workbook
 to YAML and runs the Pydantic validator.
 
 ---
 
-## 15. Auto-generated outputs
+## 16. Auto-generated outputs
 
 From a single validated YAML, the generator produces:
 
 1. **Function-list table** — Markdown / Excel.
 2. **Per-function test sheet** containing:
-   - Header table (No / Function / Control Authority / Related System / Noted)
-   - **Sequence diagram** (Mermaid is the natural fit)
+  - Header table (Function / Modes / Inputs / Outputs / Parameters)
    - **IO classification table** (Markdown / Excel, sorted by `signal_order`)
+  - **Port connection map** (`connectedTo` / `actUpon`)
    - **Vendor IO datasheet view** (per vendor) reproducing the layout in
      `Screenshot 2026-05-14 152025.png` / `161837.png`.
    - **Notes** block
@@ -676,21 +784,21 @@ sequenceDiagram
 
 ---
 
-## 16. Published artefact: `si_schema.schema.json`
+## 17. Published artefact: `si_schema.schema.json`
 
 The canonical machine-readable expression of this spec is a single
 **JSON Schema (draft 2020-12)** document, published alongside the docs site at:
 
 - https://dnv-opensource.github.io/si-schema/si_schema.schema.json
 
-It encodes every entity in §§2 – §11 (`ProjectMeta`, `Vendor`, `System`,
-`Module`, `Function`, `Interaction`, `Signal`, plus the supporting
-`ValueMapping`, `ExpectedValue`, `PulseShape`, `VendorIOMapping`) together
-with the structural validation rules from §13 that can be expressed
+It encodes every entity in §§2 – §13 (`ProjectMeta`, `Party`, `Component`,
+`Module`, `Port`, `Function`, `Connection`, `Signal`, plus the supporting
+`ValueMapping`, `PulseShape`, `VendorIOMapping`) together
+with the structural validation rules from §14 that can be expressed
 declaratively (enums, `pattern` for `signal_order`, `required`, `oneOf`
 for discrete/linear `ValueMapping`, `additionalProperties: false`).
 
-**Cross-reference and inter-rule checks** (`SIG001`–`SIG006`, `SIG009`–`SIG013`)
+**Cross-reference and inter-rule checks** (`SIG001`–`SIG008`, `SIG014`–`SIG024`)
 are not expressible in pure JSON Schema; they are enforced by the
 companion Pydantic validator. JSON Schema alone catches roughly 60 % of
 authoring mistakes; the validator catches the remaining 40 %.
@@ -723,6 +831,6 @@ authoring mistakes; the validator catches the remaining 40 %.
 ### Versioning
 
 The `version` field at the root of the schema document tracks this spec
-verbatim (currently `"0.4.0"`). Breaking changes bump the **minor**
+verbatim (currently `"0.0.6"`). Breaking changes bump the **minor**
 component; backwards-compatible additions bump the **patch** component.
 Major (`1.x`) is reserved for the first stable release.

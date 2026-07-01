@@ -1,15 +1,783 @@
 {
   "$defs": {
-    "DataType": {
-      "enum": [
-        "digital",
-        "analog_4_20mA",
-        "analog_0_10V",
-        "analog_potentiometer",
-        "serial",
-        "network"
+    "AcceptanceCase": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "scope": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Scope"
+        },
+        "preconditions": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Preconditions",
+          "type": "array"
+        },
+        "steps": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Steps",
+          "type": "array"
+        },
+        "expected_nominal": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expected Nominal"
+        },
+        "expected_fault": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expected Fault"
+        },
+        "expected_recovery": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expected Recovery"
+        },
+        "signal_refs": {
+          "items": {
+            "$ref": "#/$defs/InterfaceSignalRef"
+          },
+          "title": "Signal Refs",
+          "type": "array"
+        },
+        "witness_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Witness Ref"
+        }
+      },
+      "required": [
+        "id",
+        "name"
       ],
-      "title": "DataType",
+      "title": "AcceptanceCase",
+      "type": "object"
+    },
+    "AccessMode": {
+      "enum": [
+        "read",
+        "write",
+        "read_write"
+      ],
+      "title": "AccessMode",
+      "type": "string"
+    },
+    "AlarmDefinition": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "priority": {
+          "$ref": "#/$defs/AlarmPriority"
+        },
+        "category": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Category"
+        },
+        "latching": {
+          "default": false,
+          "title": "Latching",
+          "type": "boolean"
+        },
+        "ack_required": {
+          "default": false,
+          "title": "Ack Required",
+          "type": "boolean"
+        },
+        "remote_reset_allowed": {
+          "default": false,
+          "title": "Remote Reset Allowed",
+          "type": "boolean"
+        },
+        "visible_on_bridge": {
+          "default": false,
+          "title": "Visible On Bridge",
+          "type": "boolean"
+        },
+        "visible_on_ecr": {
+          "default": true,
+          "title": "Visible On Ecr",
+          "type": "boolean"
+        },
+        "visible_on_ias": {
+          "default": true,
+          "title": "Visible On Ias",
+          "type": "boolean"
+        },
+        "event_logging_required": {
+          "default": true,
+          "title": "Event Logging Required",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "text",
+        "priority"
+      ],
+      "title": "AlarmDefinition",
+      "type": "object"
+    },
+    "AlarmPriority": {
+      "enum": [
+        "critical",
+        "high",
+        "medium",
+        "low"
+      ],
+      "title": "AlarmPriority",
+      "type": "string"
+    },
+    "ArtifactMeta": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_id": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Artifact Id"
+        },
+        "role": {
+          "$ref": "#/$defs/ArtifactRole",
+          "default": "si_internal"
+        },
+        "status": {
+          "$ref": "#/$defs/ArtifactStatus",
+          "default": "draft"
+        },
+        "contract_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Contract Version"
+        },
+        "compatibility": {
+          "$ref": "#/$defs/CompatibilityClass",
+          "default": "none"
+        },
+        "published_at": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Published At"
+        },
+        "supersedes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Supersedes"
+        },
+        "intended_consumers": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Intended Consumers",
+          "type": "array"
+        },
+        "lifecycle_state": {
+          "$ref": "#/$defs/LifecycleState",
+          "default": "active"
+        },
+        "deprecated_at": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Deprecated At"
+        },
+        "sunset_at": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sunset At"
+        },
+        "replaced_by": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Replaced By"
+        }
+      },
+      "title": "ArtifactMeta",
+      "type": "object"
+    },
+    "ArtifactRole": {
+      "enum": [
+        "si_internal",
+        "integration_contract",
+        "exchange_projection"
+      ],
+      "title": "ArtifactRole",
+      "type": "string"
+    },
+    "ArtifactStatus": {
+      "enum": [
+        "draft",
+        "released",
+        "deprecated",
+        "withdrawn"
+      ],
+      "title": "ArtifactStatus",
+      "type": "string"
+    },
+    "AuthorityRule": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "command_owner": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Command Owner",
+          "type": "string"
+        },
+        "allowed_modes": {
+          "items": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+            "type": "string"
+          },
+          "title": "Allowed Modes",
+          "type": "array"
+        },
+        "arbitration": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Arbitration"
+        },
+        "fallback_behavior": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Fallback Behavior"
+        }
+      },
+      "required": [
+        "id",
+        "command_owner"
+      ],
+      "title": "AuthorityRule",
+      "type": "object"
+    },
+    "CANopenAddressing": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "canopen",
+          "default": "canopen",
+          "title": "Kind",
+          "type": "string"
+        },
+        "cob_id": {
+          "maximum": 2047,
+          "minimum": 0,
+          "title": "Cob Id",
+          "type": "integer"
+        },
+        "node_id": {
+          "anyOf": [
+            {
+              "maximum": 127,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Node Id"
+        },
+        "index": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Index"
+        },
+        "subindex": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Subindex"
+        }
+      },
+      "required": [
+        "cob_id"
+      ],
+      "title": "CANopenAddressing",
+      "type": "object"
+    },
+    "CableProfile": {
+      "additionalProperties": false,
+      "properties": {
+        "cable_type": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cable Type"
+        },
+        "pair_type": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pair Type"
+        },
+        "shielded": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Shielded"
+        },
+        "grounding_policy": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Grounding Policy"
+        },
+        "max_length_m": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Length M"
+        },
+        "emc_notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Emc Notes"
+        }
+      },
+      "title": "CableProfile",
+      "type": "object"
+    },
+    "CommandContract": {
+      "additionalProperties": false,
+      "properties": {
+        "ack_timeout_ms": {
+          "minimum": 1,
+          "title": "Ack Timeout Ms",
+          "type": "integer"
+        },
+        "retry_count": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Retry Count",
+          "type": "integer"
+        },
+        "nack_behavior": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Nack Behavior"
+        }
+      },
+      "required": [
+        "ack_timeout_ms"
+      ],
+      "title": "CommandContract",
+      "type": "object"
+    },
+    "CompatibilityClass": {
+      "enum": [
+        "none",
+        "backward",
+        "forward",
+        "full"
+      ],
+      "title": "CompatibilityClass",
+      "type": "string"
+    },
+    "Component": {
+      "additionalProperties": false,
+      "description": "Replaces legacy System (\u00a74). Execution host and interface container.",
+      "properties": {
+        "id": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "modes": {
+          "items": {
+            "$ref": "#/$defs/Mode"
+          },
+          "title": "Modes",
+          "type": "array"
+        },
+        "modules": {
+          "items": {
+            "$ref": "#/$defs/Module"
+          },
+          "title": "Modules",
+          "type": "array"
+        },
+        "ports": {
+          "items": {
+            "$ref": "#/$defs/Port"
+          },
+          "title": "Ports",
+          "type": "array"
+        },
+        "vendor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Vendor"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ],
+      "title": "Component",
+      "type": "object"
+    },
+    "Connection": {
+      "additionalProperties": false,
+      "description": "A directed edge between two ports transmitting one signal.",
+      "properties": {
+        "id": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "from_port_ref": {
+          "title": "From Port Ref",
+          "type": "string"
+        },
+        "to_port_ref": {
+          "title": "To Port Ref",
+          "type": "string"
+        },
+        "connection_type": {
+          "$ref": "#/$defs/ConnectionType"
+        },
+        "signal": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Signal",
+          "type": "string"
+        },
+        "properties": {
+          "type": "object",
+          "additionalProperties": true,
+          "title": "Properties"
+        }
+      },
+      "required": [
+        "id",
+        "from_port_ref",
+        "to_port_ref",
+        "connection_type",
+        "signal"
+      ],
+      "title": "Connection",
+      "type": "object"
+    },
+    "ConnectionType": {
+      "enum": [
+        "physical",
+        "logical",
+        "control",
+        "data",
+        "status"
+      ],
+      "title": "ConnectionType",
+      "type": "string"
+    },
+    "ConnectorPin": {
+      "additionalProperties": false,
+      "properties": {
+        "pin": {
+          "title": "Pin",
+          "type": "string"
+        },
+        "signal_role": {
+          "title": "Signal Role",
+          "type": "string"
+        },
+        "polarity": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Polarity"
+        }
+      },
+      "required": [
+        "pin",
+        "signal_role"
+      ],
+      "title": "ConnectorPin",
+      "type": "object"
+    },
+    "ConnectorProfile": {
+      "additionalProperties": false,
+      "properties": {
+        "connector_type": {
+          "title": "Connector Type",
+          "type": "string"
+        },
+        "mating_side_owner": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Mating Side Owner"
+        },
+        "pins": {
+          "items": {
+            "$ref": "#/$defs/ConnectorPin"
+          },
+          "title": "Pins",
+          "type": "array"
+        },
+        "shield_termination": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Shield Termination"
+        },
+        "grounding_policy": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Grounding Policy"
+        }
+      },
+      "required": [
+        "connector_type"
+      ],
+      "title": "ConnectorProfile",
+      "type": "object"
+    },
+    "ContactType": {
+      "enum": [
+        "dry",
+        "wet"
+      ],
+      "title": "ContactType",
       "type": "string"
     },
     "Direction": {
@@ -76,157 +844,174 @@
       "title": "DiscreteMapping",
       "type": "object"
     },
-    "ExpectedValueDiscrete": {
+    "ElectricalProfile": {
       "additionalProperties": false,
       "properties": {
-        "raw": {
+        "contact_type": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ContactType"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "logic_type": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LogicType"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "wire_count": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WireCount"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "loop_powered": {
           "anyOf": [
             {
               "type": "boolean"
             },
             {
-              "type": "integer"
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Loop Powered"
+        },
+        "external_powered": {
+          "anyOf": [
+            {
+              "type": "boolean"
             },
             {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "External Powered"
+        },
+        "nominal_voltage_v": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
               "type": "number"
             },
             {
-              "type": "string"
-            }
-          ],
-          "title": "Raw"
-        },
-        "meaning": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
               "type": "null"
             }
           ],
           "default": null,
-          "title": "Meaning"
+          "title": "Nominal Voltage V"
+        },
+        "isolation_required": {
+          "default": false,
+          "title": "Isolation Required",
+          "type": "boolean"
         }
       },
-      "required": [
-        "raw"
-      ],
-      "title": "ExpectedValueDiscrete",
+      "title": "ElectricalProfile",
       "type": "object"
     },
-    "ExpectedValueLinear": {
-      "additionalProperties": false,
-      "properties": {
-        "raw": {
-          "$ref": "#/$defs/ValueScalar"
-        },
-        "physical": {
-          "$ref": "#/$defs/ValueScalar"
-        },
-        "meaning": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Meaning"
-        }
-      },
-      "required": [
-        "raw",
-        "physical"
+    "ExchangePattern": {
+      "enum": [
+        "cyclic",
+        "polled",
+        "event_driven",
+        "handshake"
       ],
-      "title": "ExpectedValueLinear",
-      "type": "object"
+      "title": "ExchangePattern",
+      "type": "string"
     },
     "Function": {
       "additionalProperties": false,
+      "description": "Unified hierarchical function entity (\u00a77). No system/component-level split.",
       "properties": {
-        "no": {
-          "minimum": 1,
-          "title": "No",
-          "type": "integer"
+        "id": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Id",
+          "type": "string"
         },
         "name": {
           "title": "Name",
           "type": "string"
         },
-        "description": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Description"
-        },
-        "function_category": {
-          "$ref": "#/$defs/FunctionCategory"
-        },
-        "control_authority": {
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$",
-          "title": "Control Authority",
+        "component_id": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Component Id",
           "type": "string"
         },
-        "related_systems": {
+        "modes": {
           "items": {
-            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
             "type": "string"
           },
-          "title": "Related Systems",
+          "minItems": 1,
+          "title": "Modes",
           "type": "array"
         },
-        "interactions": {
-          "items": {
-            "$ref": "#/$defs/Interaction"
-          },
-          "title": "Interactions",
-          "type": "array"
-        },
-        "signals": {
+        "input_signals": {
           "items": {
             "$ref": "#/$defs/Signal"
           },
-          "title": "Signals",
+          "title": "Input Signals",
           "type": "array"
+        },
+        "output_signals": {
+          "items": {
+            "$ref": "#/$defs/Signal"
+          },
+          "title": "Output Signals",
+          "type": "array"
+        },
+        "parameters": {
+          "items": {
+            "$ref": "#/$defs/Parameter"
+          },
+          "title": "Parameters",
+          "type": "array"
+        },
+        "function_description": {
+          "description": "Required free text describing function behavior for SI mapping. Include applicable standards and references (e.g., DNV-RP-0684 Annex A, SysML v2, or domain-specific standards) with relevant version, section, and constraint details.",
+          "minLength": 1,
+          "title": "Function Description",
+          "type": "string"
         }
       },
       "required": [
-        "no",
+        "id",
         "name",
-        "function_category",
-        "control_authority"
+        "component_id",
+        "modes",
+        "function_description"
       ],
       "title": "Function",
       "type": "object"
     },
-    "FunctionCategory": {
-      "enum": [
-        "Command",
-        "Status",
-        "Alarm",
-        "Indication",
-        "Permissive",
-        "Other"
-      ],
-      "title": "FunctionCategory",
-      "type": "string"
-    },
-    "Interaction": {
+    "Interface": {
       "additionalProperties": false,
       "properties": {
-        "no": {
-          "minimum": 1,
-          "title": "No",
-          "type": "integer"
+        "id": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
         },
         "from_ref": {
           "$ref": "#/$defs/SystemRef"
@@ -234,30 +1019,219 @@
         "to_ref": {
           "$ref": "#/$defs/SystemRef"
         },
-        "link_type": {
-          "$ref": "#/$defs/LinkType"
+        "medium": {
+          "$ref": "#/$defs/InterfaceMedium"
         },
-        "label": {
-          "title": "Label",
-          "type": "string"
+        "protocol_binding_id": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Protocol Binding Id"
         },
-        "signal_refs": {
+        "member_signals": {
           "items": {
-            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$",
+            "$ref": "#/$defs/InterfaceSignalRef"
+          },
+          "title": "Member Signals",
+          "type": "array"
+        },
+        "authority_rule_id": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Authority Rule Id"
+        },
+        "alarm_definition_ids": {
+          "items": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
             "type": "string"
           },
-          "title": "Signal Refs",
+          "title": "Alarm Definition Ids",
+          "type": "array"
+        },
+        "physical_link": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PhysicalLinkProfile"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "lifecycle_state": {
+          "$ref": "#/$defs/LifecycleState",
+          "default": "active"
+        },
+        "deprecated_at": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Deprecated At"
+        },
+        "sunset_at": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sunset At"
+        },
+        "replaced_by": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Replaced By"
+        },
+        "purpose": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Purpose"
+        },
+        "installation_notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Installation Notes"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "from_ref",
+        "to_ref",
+        "medium"
+      ],
+      "title": "Interface",
+      "type": "object"
+    },
+    "InterfaceMedium": {
+      "enum": [
+        "hardwired",
+        "serial",
+        "network",
+        "wireless"
+      ],
+      "title": "InterfaceMedium",
+      "type": "string"
+    },
+    "InterfaceSignalRef": {
+      "additionalProperties": false,
+      "properties": {
+        "function_no": {
+          "minimum": 1,
+          "title": "Function No",
+          "type": "integer"
+        },
+        "signal_id": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Signal Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "function_no",
+        "signal_id"
+      ],
+      "title": "InterfaceSignalRef",
+      "type": "object"
+    },
+    "LifecycleState": {
+      "enum": [
+        "active",
+        "deprecated",
+        "withdrawn"
+      ],
+      "title": "LifecycleState",
+      "type": "string"
+    },
+    "Lineage": {
+      "additionalProperties": false,
+      "properties": {
+        "signal_ref": {
+          "$ref": "#/$defs/LineageSignalRef"
+        },
+        "hops": {
+          "items": {
+            "$ref": "#/$defs/TransformationHop"
+          },
+          "minItems": 1,
+          "title": "Hops",
           "type": "array"
         }
       },
       "required": [
-        "no",
-        "from_ref",
-        "to_ref",
-        "link_type",
-        "label"
+        "signal_ref",
+        "hops"
       ],
-      "title": "Interaction",
+      "title": "Lineage",
+      "type": "object"
+    },
+    "LineageSignalRef": {
+      "additionalProperties": false,
+      "properties": {
+        "function_no": {
+          "minimum": 1,
+          "title": "Function No",
+          "type": "integer"
+        },
+        "signal_id": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Signal Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "function_no",
+        "signal_id"
+      ],
+      "title": "LineageSignalRef",
       "type": "object"
     },
     "LinearMapping": {
@@ -295,21 +1269,134 @@
       "title": "LinearMapping",
       "type": "object"
     },
-    "LinkType": {
+    "LogicType": {
       "enum": [
-        "hardwired",
-        "serial",
-        "network",
-        "wireless"
+        "sourcing",
+        "sinking",
+        "differential",
+        "isolated"
       ],
-      "title": "LinkType",
+      "title": "LogicType",
       "type": "string"
+    },
+    "ModbusAddressing": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "modbus",
+          "default": "modbus",
+          "title": "Kind",
+          "type": "string"
+        },
+        "register_type": {
+          "title": "Register Type",
+          "type": "string"
+        },
+        "start": {
+          "maximum": 65535,
+          "minimum": 1,
+          "title": "Start",
+          "type": "integer"
+        },
+        "count": {
+          "maximum": 2000,
+          "minimum": 1,
+          "title": "Count",
+          "type": "integer"
+        },
+        "bit_offset": {
+          "anyOf": [
+            {
+              "maximum": 15,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Bit Offset"
+        }
+      },
+      "required": [
+        "register_type",
+        "start",
+        "count"
+      ],
+      "title": "ModbusAddressing",
+      "type": "object"
+    },
+    "Mode": {
+      "additionalProperties": false,
+      "description": "Vendor-defined component mode definition, referenced by functions.",
+      "properties": {
+        "id": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Name"
+        },
+        "description": {
+          "minLength": 1,
+          "title": "Description",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "description"
+      ],
+      "title": "Mode",
+      "type": "object"
+    },
+    "ModeDefinition": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "mode": {
+          "$ref": "#/$defs/OperatingMode"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        }
+      },
+      "required": [
+        "id",
+        "mode"
+      ],
+      "title": "ModeDefinition",
+      "type": "object"
     },
     "Module": {
       "additionalProperties": false,
       "properties": {
         "id": {
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
           "title": "Id",
           "type": "string"
         },
@@ -344,11 +1431,422 @@
       "title": "Module",
       "type": "object"
     },
+    "NMEA0183Addressing": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "nmea0183",
+          "default": "nmea0183",
+          "title": "Kind",
+          "type": "string"
+        },
+        "sentence": {
+          "pattern": "^[A-Z]{5}$",
+          "title": "Sentence",
+          "type": "string"
+        },
+        "field": {
+          "anyOf": [
+            {
+              "maximum": 99,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Field"
+        }
+      },
+      "required": [
+        "sentence"
+      ],
+      "title": "NMEA0183Addressing",
+      "type": "object"
+    },
+    "NMEA2000Addressing": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "nmea2000",
+          "default": "nmea2000",
+          "title": "Kind",
+          "type": "string"
+        },
+        "pgn": {
+          "maximum": 262143,
+          "minimum": 0,
+          "title": "Pgn",
+          "type": "integer"
+        },
+        "source_address": {
+          "anyOf": [
+            {
+              "maximum": 255,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Address"
+        }
+      },
+      "required": [
+        "pgn"
+      ],
+      "title": "NMEA2000Addressing",
+      "type": "object"
+    },
+    "NetworkProfile": {
+      "additionalProperties": false,
+      "properties": {
+        "segment_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Segment Id"
+        },
+        "vlan_id": {
+          "anyOf": [
+            {
+              "maximum": 4094,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Vlan Id"
+        },
+        "security_zone": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Security Zone"
+        },
+        "gateway_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Gateway Id"
+        },
+        "redundancy_role": {
+          "$ref": "#/$defs/RedundancyRole",
+          "default": "none"
+        },
+        "security_mode": {
+          "$ref": "#/$defs/SecurityMode",
+          "default": "none"
+        },
+        "auth_profile": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Auth Profile"
+        },
+        "time_sync_source": {
+          "$ref": "#/$defs/TimeSyncSource",
+          "default": "none"
+        },
+        "timestamp_quality_required": {
+          "default": false,
+          "title": "Timestamp Quality Required",
+          "type": "boolean"
+        }
+      },
+      "title": "NetworkProfile",
+      "type": "object"
+    },
+    "OPCUAAddressing": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "opcua",
+          "default": "opcua",
+          "title": "Kind",
+          "type": "string"
+        },
+        "node_id": {
+          "pattern": "^ns=\\d+;[isgb]=.+$",
+          "title": "Node Id",
+          "type": "string"
+        },
+        "browse_path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Browse Path"
+        }
+      },
+      "required": [
+        "node_id"
+      ],
+      "title": "OPCUAAddressing",
+      "type": "object"
+    },
+    "OperatingMode": {
+      "enum": [
+        "local",
+        "remote",
+        "auto",
+        "manual",
+        "degraded",
+        "emergency"
+      ],
+      "title": "OperatingMode",
+      "type": "string"
+    },
+    "Parameter": {
+      "additionalProperties": false,
+      "description": "Typed parameter entry on a function.",
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "type": {
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "type"
+      ],
+      "title": "Parameter",
+      "type": "object"
+    },
+    "Party": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/PartyKind",
+          "default": "vendor"
+        },
+        "role": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Role"
+        },
+        "contact": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Contact"
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ],
+      "title": "Party",
+      "type": "object"
+    },
+    "PartyKind": {
+      "enum": [
+        "vendor",
+        "integrator",
+        "shipyard",
+        "shipowner",
+        "class_society",
+        "analytics_provider",
+        "operator"
+      ],
+      "title": "PartyKind",
+      "type": "string"
+    },
+    "PhysicalLinkProfile": {
+      "additionalProperties": false,
+      "properties": {
+        "electrical": {
+          "$ref": "#/$defs/ElectricalProfile"
+        },
+        "connector": {
+          "$ref": "#/$defs/ConnectorProfile"
+        },
+        "cable": {
+          "$ref": "#/$defs/CableProfile"
+        },
+        "redundancy_role": {
+          "$ref": "#/$defs/RedundancyRole",
+          "default": "none"
+        },
+        "marshalling_location": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Marshalling Location"
+        }
+      },
+      "required": [
+        "electrical",
+        "connector",
+        "cable"
+      ],
+      "title": "PhysicalLinkProfile",
+      "type": "object"
+    },
+    "Port": {
+      "additionalProperties": false,
+      "description": "First-class interface endpoint on a Component (\u00a76).",
+      "properties": {
+        "id": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "direction": {
+          "$ref": "#/$defs/PortDirection"
+        },
+        "module_id": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Module Id"
+        },
+        "terminals": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Terminals",
+          "type": "array"
+        },
+        "port_type": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PortType"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "protocol": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Protocol"
+        },
+        "attributes": {
+          "additionalProperties": true,
+          "title": "Attributes",
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "direction"
+      ],
+      "title": "Port",
+      "type": "object"
+    },
+    "PortDirection": {
+      "enum": [
+        "in",
+        "out",
+        "undefined"
+      ],
+      "title": "PortDirection",
+      "type": "string"
+    },
+    "PortType": {
+      "enum": [
+        "Signal",
+        "CAN-TC",
+        "Analog",
+        "Resistor",
+        "4-20mA",
+        "0-10V",
+        "Serial",
+        "Network"
+      ],
+      "title": "PortType",
+      "type": "string"
+    },
     "ProjectMeta": {
       "additionalProperties": false,
       "properties": {
         "project_id": {
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
           "title": "Project Id",
           "type": "string"
         },
@@ -365,8 +1863,12 @@
           "title": "Project Name"
         },
         "schema_version": {
-          "const": "0.4",
-          "default": "0.4",
+          "default": "0.0.6",
+          "enum": [
+            "0.0.4",
+            "0.0.5",
+            "0.0.6"
+          ],
           "title": "Schema Version",
           "type": "string"
         },
@@ -426,15 +1928,94 @@
       "title": "ProjectMeta",
       "type": "object"
     },
-    "PulseShape": {
+    "ProtocolBinding": {
       "additionalProperties": false,
       "properties": {
-        "width_ms": {
-          "exclusiveMinimum": 0,
-          "title": "Width Ms",
-          "type": "number"
+        "id": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Id",
+          "type": "string"
         },
-        "pulse_count": {
+        "family": {
+          "$ref": "#/$defs/ProtocolFamily"
+        },
+        "transport": {
+          "$ref": "#/$defs/InterfaceMedium"
+        },
+        "exchange_pattern": {
+          "$ref": "#/$defs/ExchangePattern"
+        },
+        "access_mode": {
+          "$ref": "#/$defs/AccessMode",
+          "default": "read"
+        },
+        "endpoint": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Endpoint"
+        },
+        "address": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Address"
+        },
+        "addressing": {
+          "anyOf": [
+            {
+              "discriminator": {
+                "mapping": {
+                  "canopen": "#/$defs/CANopenAddressing",
+                  "modbus": "#/$defs/ModbusAddressing",
+                  "nmea0183": "#/$defs/NMEA0183Addressing",
+                  "nmea2000": "#/$defs/NMEA2000Addressing",
+                  "opcua": "#/$defs/OPCUAAddressing",
+                  "vendor": "#/$defs/VendorAddressing"
+                },
+                "propertyName": "kind"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/ModbusAddressing"
+                },
+                {
+                  "$ref": "#/$defs/CANopenAddressing"
+                },
+                {
+                  "$ref": "#/$defs/NMEA0183Addressing"
+                },
+                {
+                  "$ref": "#/$defs/NMEA2000Addressing"
+                },
+                {
+                  "$ref": "#/$defs/OPCUAAddressing"
+                },
+                {
+                  "$ref": "#/$defs/VendorAddressing"
+                }
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Addressing"
+        },
+        "update_ms": {
           "anyOf": [
             {
               "minimum": 1,
@@ -445,27 +2026,91 @@
             }
           ],
           "default": null,
-          "title": "Pulse Count"
+          "title": "Update Ms"
         },
-        "period_ms": {
+        "timeout_ms": {
           "anyOf": [
             {
-              "exclusiveMinimum": 0,
-              "type": "number"
+              "minimum": 1,
+              "type": "integer"
             },
             {
               "type": "null"
             }
           ],
           "default": null,
-          "title": "Period Ms"
+          "title": "Timeout Ms"
+        },
+        "quality_on_timeout": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Quality On Timeout"
+        },
+        "command_contract": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CommandContract"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "network_profile": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NetworkProfile"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
         }
       },
       "required": [
-        "width_ms"
+        "id",
+        "family",
+        "transport",
+        "exchange_pattern"
       ],
-      "title": "PulseShape",
+      "title": "ProtocolBinding",
       "type": "object"
+    },
+    "ProtocolFamily": {
+      "enum": [
+        "ModbusRTU",
+        "ModbusTCP",
+        "CANopen",
+        "NMEA0183",
+        "NMEA2000",
+        "OPCUA",
+        "Profinet",
+        "EtherNetIP",
+        "VendorSpecific"
+      ],
+      "title": "ProtocolFamily",
+      "type": "string"
     },
     "RangeEndpoint": {
       "additionalProperties": false,
@@ -498,107 +2143,67 @@
       "title": "RangeEndpoint",
       "type": "object"
     },
+    "RedundancyRole": {
+      "enum": [
+        "none",
+        "primary",
+        "secondary",
+        "dual_homed"
+      ],
+      "title": "RedundancyRole",
+      "type": "string"
+    },
+    "SecurityMode": {
+      "enum": [
+        "none",
+        "tls",
+        "dtls",
+        "vpn"
+      ],
+      "title": "SecurityMode",
+      "type": "string"
+    },
     "Signal": {
       "additionalProperties": false,
+      "description": "Project-level signal definition (\u00a79).",
       "properties": {
         "id": {
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
           "title": "Id",
           "type": "string"
         },
-        "signal_order": {
-          "pattern": "^(SC|TC|\\d+(-(Main|Backup|Start|Stop))?)$",
-          "title": "Signal Order",
+        "name": {
+          "title": "Name",
           "type": "string"
         },
-        "signal_name": {
-          "title": "Signal Name",
-          "type": "string"
+        "signal_type": {
+          "$ref": "#/$defs/SignalType"
         },
-        "from_system": {
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$",
-          "title": "From System",
-          "type": "string"
-        },
-        "from_module": {
-          "anyOf": [
-            {
-              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$",
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "From Module"
-        },
-        "to_system": {
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$",
-          "title": "To System",
-          "type": "string"
-        },
-        "to_module": {
-          "anyOf": [
-            {
-              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$",
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "To Module"
-        },
-        "function_category": {
-          "$ref": "#/$defs/FunctionCategory"
-        },
-        "function_subcategory": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Function Subcategory"
-        },
-        "data_type": {
-          "$ref": "#/$defs/DataType"
+        "category": {
+          "$ref": "#/$defs/SignalCategory"
         },
         "subtype": {
           "items": {
-            "$ref": "#/$defs/SignalSubtype"
+            "type": "string"
           },
           "title": "Subtype",
           "type": "array"
         },
-        "unit": {
+        "processing": {
           "anyOf": [
             {
-              "type": "string"
+              "$ref": "#/$defs/SignalProcessing"
             },
             {
               "type": "null"
             }
           ],
-          "default": null,
-          "title": "Unit"
+          "default": null
         },
-        "range": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Range"
+        "attributes": {
+          "additionalProperties": true,
+          "title": "Attributes",
+          "type": "object"
         },
         "value_mapping": {
           "anyOf": [
@@ -626,40 +2231,6 @@
           "default": null,
           "title": "Value Mapping"
         },
-        "expected_value": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/ExpectedValueDiscrete"
-            },
-            {
-              "$ref": "#/$defs/ExpectedValueLinear"
-            }
-          ],
-          "title": "Expected Value"
-        },
-        "value_description": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Value Description"
-        },
-        "pulse_shape": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/PulseShape"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null
-        },
         "vendor_io_mappings": {
           "items": {
             "$ref": "#/$defs/VendorIOMapping"
@@ -683,39 +2254,96 @@
           ],
           "default": null,
           "title": "Source Doc Ref"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
         }
       },
       "required": [
         "id",
-        "signal_order",
-        "signal_name",
-        "from_system",
-        "to_system",
-        "function_category",
-        "data_type",
-        "expected_value"
+        "name",
+        "signal_type",
+        "category"
       ],
       "title": "Signal",
       "type": "object"
     },
-    "SignalSubtype": {
+    "SignalCategory": {
       "enum": [
-        "NO",
-        "NC",
-        "steady",
-        "pulse",
-        "sine_cosine",
-        "single_ended",
-        "differential"
+        "command",
+        "permission/interlock",
+        "feedback",
+        "safety",
+        "mode",
+        "monitoring"
       ],
-      "title": "SignalSubtype",
+      "title": "SignalCategory",
+      "type": "string"
+    },
+    "SignalProcessing": {
+      "additionalProperties": false,
+      "properties": {
+        "filtered": {
+          "default": false,
+          "title": "Filtered",
+          "type": "boolean"
+        },
+        "delay_ms": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Delay Ms"
+        },
+        "moving_average_window": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Moving Average Window"
+        }
+      },
+      "title": "SignalProcessing",
+      "type": "object"
+    },
+    "SignalType": {
+      "enum": [
+        "Digital",
+        "Analog",
+        "CAN",
+        "I2C",
+        "1-wire",
+        "UART"
+      ],
+      "title": "SignalType",
       "type": "string"
     },
     "System": {
       "additionalProperties": false,
       "properties": {
         "id": {
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
           "title": "Id",
           "type": "string"
         },
@@ -726,7 +2354,7 @@
         "vendor": {
           "anyOf": [
             {
-              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
               "type": "string"
             },
             {
@@ -734,7 +2362,7 @@
             }
           ],
           "default": null,
-          "description": "References vendors[*].id.",
+          "description": "References parties[*].id where kind=vendor.",
           "title": "Vendor"
         },
         "modules": {
@@ -756,14 +2384,14 @@
       "additionalProperties": false,
       "properties": {
         "system_id": {
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
           "title": "System Id",
           "type": "string"
         },
         "module_id": {
           "anyOf": [
             {
-              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
               "type": "string"
             },
             {
@@ -780,27 +2408,53 @@
       "title": "SystemRef",
       "type": "object"
     },
-    "ValueScalar": {
+    "TimeSyncSource": {
+      "enum": [
+        "none",
+        "ntp",
+        "ptp",
+        "gps"
+      ],
+      "title": "TimeSyncSource",
+      "type": "string"
+    },
+    "TransformationHop": {
       "additionalProperties": false,
       "properties": {
-        "value": {
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "type": "integer"
-            },
-            {
-              "type": "number"
-            },
-            {
-              "type": "string"
-            }
-          ],
-          "title": "Value"
+        "step": {
+          "minimum": 1,
+          "title": "Step",
+          "type": "integer"
         },
-        "unit": {
+        "actor": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Actor",
+          "type": "string"
+        },
+        "rule": {
+          "$ref": "#/$defs/TransformationRule"
+        },
+        "rule_params": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ]
+          },
+          "title": "Rule Params",
+          "type": "object"
+        },
+        "input_contract": {
           "anyOf": [
             {
               "type": "string"
@@ -810,65 +2464,103 @@
             }
           ],
           "default": null,
-          "title": "Unit"
+          "title": "Input Contract"
+        },
+        "output_contract": {
+          "title": "Output Contract",
+          "type": "string"
+        },
+        "lifecycle_state": {
+          "$ref": "#/$defs/LifecycleState",
+          "default": "active"
+        },
+        "deprecated_at": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Deprecated At"
+        },
+        "sunset_at": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sunset At"
+        },
+        "replaced_by_contract": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Replaced By Contract"
         }
       },
       "required": [
-        "value"
+        "step",
+        "actor",
+        "rule",
+        "output_contract"
       ],
-      "title": "ValueScalar",
+      "title": "TransformationHop",
       "type": "object"
     },
-    "Vendor": {
+    "TransformationRule": {
+      "enum": [
+        "sample",
+        "average",
+        "derive",
+        "filter",
+        "threshold",
+        "command",
+        "passthrough"
+      ],
+      "title": "TransformationRule",
+      "type": "string"
+    },
+    "VendorAddressing": {
       "additionalProperties": false,
       "properties": {
-        "id": {
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$",
-          "title": "Id",
+        "kind": {
+          "const": "vendor",
+          "default": "vendor",
+          "title": "Kind",
           "type": "string"
         },
-        "name": {
-          "title": "Name",
+        "spec": {
+          "title": "Spec",
           "type": "string"
-        },
-        "role": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Role"
-        },
-        "contact": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Contact"
         }
       },
       "required": [
-        "id",
-        "name"
+        "spec"
       ],
-      "title": "Vendor",
+      "title": "VendorAddressing",
       "type": "object"
     },
     "VendorIOMapping": {
       "additionalProperties": false,
       "properties": {
-        "vendor_id": {
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$",
-          "title": "Vendor Id",
+        "party_id": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Party Id",
           "type": "string"
         },
         "item": {
@@ -951,39 +2643,71 @@
         }
       },
       "required": [
-        "vendor_id"
+        "party_id"
       ],
       "title": "VendorIOMapping",
       "type": "object"
+    },
+    "WireCount": {
+      "enum": [
+        "2_wire",
+        "3_wire",
+        "4_wire"
+      ],
+      "title": "WireCount",
+      "type": "string"
     }
   },
   "additionalProperties": false,
   "description": "Top-level si-schema document (\u00a71).",
   "properties": {
+    "artefact": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ArtifactMeta"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
     "project": {
       "$ref": "#/$defs/ProjectMeta"
     },
-    "vendors": {
+    "parties": {
       "items": {
-        "$ref": "#/$defs/Vendor"
+        "$ref": "#/$defs/Party"
       },
-      "title": "Vendors",
+      "title": "Parties",
       "type": "array"
     },
-    "systems": {
+    "components": {
       "items": {
-        "$ref": "#/$defs/System"
+        "$ref": "#/$defs/Component"
       },
-      "minItems": 1,
-      "title": "Systems",
+      "title": "Components",
+      "type": "array"
+    },
+    "connections": {
+      "items": {
+        "$ref": "#/$defs/Connection"
+      },
+      "title": "Connections",
       "type": "array"
     },
     "functions": {
       "items": {
         "$ref": "#/$defs/Function"
       },
-      "minItems": 1,
       "title": "Functions",
+      "type": "array"
+    },
+    "signals": {
+      "items": {
+        "$ref": "#/$defs/Signal"
+      },
+      "title": "Signals",
       "type": "array"
     },
     "glossary": {
@@ -992,15 +2716,69 @@
       },
       "title": "Glossary",
       "type": "object"
+    },
+    "systems": {
+      "items": {
+        "$ref": "#/$defs/System"
+      },
+      "title": "Systems",
+      "type": "array"
+    },
+    "protocol_bindings": {
+      "items": {
+        "$ref": "#/$defs/ProtocolBinding"
+      },
+      "title": "Protocol Bindings",
+      "type": "array"
+    },
+    "mode_definitions": {
+      "items": {
+        "$ref": "#/$defs/ModeDefinition"
+      },
+      "title": "Mode Definitions",
+      "type": "array"
+    },
+    "authority_rules": {
+      "items": {
+        "$ref": "#/$defs/AuthorityRule"
+      },
+      "title": "Authority Rules",
+      "type": "array"
+    },
+    "alarm_definitions": {
+      "items": {
+        "$ref": "#/$defs/AlarmDefinition"
+      },
+      "title": "Alarm Definitions",
+      "type": "array"
+    },
+    "interfaces": {
+      "items": {
+        "$ref": "#/$defs/Interface"
+      },
+      "title": "Interfaces",
+      "type": "array"
+    },
+    "acceptance_cases": {
+      "items": {
+        "$ref": "#/$defs/AcceptanceCase"
+      },
+      "title": "Acceptance Cases",
+      "type": "array"
+    },
+    "lineages": {
+      "items": {
+        "$ref": "#/$defs/Lineage"
+      },
+      "title": "Lineages",
+      "type": "array"
     }
   },
   "required": [
-    "project",
-    "systems",
-    "functions"
+    "project"
   ],
   "title": "SISchema",
   "type": "object",
   "$id": "https://dnv-opensource.github.io/si-schema/si_schema.schema.json",
-  "version": "0.4.0"
+  "version": "0.0.7a2"
 }
