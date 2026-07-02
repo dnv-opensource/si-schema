@@ -5,7 +5,7 @@
 
 [![Website](https://img.shields.io/badge/website-dnv--opensource.github.io%2Fsi--schema-0a2540?logo=githubpages)](https://dnv-opensource.github.io/si-schema/)
 [![Schema](https://img.shields.io/badge/JSON_Schema-draft%202020--12-00a3a1)](https://dnv-opensource.github.io/si-schema/si_schema.schema.json)
-[![Spec](https://img.shields.io/badge/spec-v0.0.8-blue)](./TEST_SHEET_DATA_STRUCTURE.md)
+[![Spec](https://img.shields.io/badge/spec-v0.0.9-blue)](./TEST_SHEET_DATA_STRUCTURE.md)
 [![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
 
 ---

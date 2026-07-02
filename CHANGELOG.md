@@ -8,6 +8,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 
+## [0.0.9] -- 2026-07-02
+
+### Added
+- Example files (`publish/examples/`) are now validated against Pydantic
+  models by automated tests (`TestExampleFiles`).
+- Example files are now published to the public repository alongside schemas.
+- Schema-update agent now tracks example files as dependent artifact #9.
+
+### Changed
+- Refined `bump-version` and `prepare-release` agent skills based on v0.0.8
+  release learnings: removed redundant prettier step, added changelog
+  sub-header merging, clarified Phase 7 skip condition.
+- Synced local publish dry-run scripts with CI workflow (added examples,
+  removed `TEST_SHEET_DATA_STRUCTURE.md`).
+- Documented publish scripts and example files in `.instructions.md`.
+
+### Removed
+- `MIGRATION.md` -- obsolete one-time migration runbook.
+- `TEST_SHEET_DATA_STRUCTURE.md` removed from public repo publish output.
+
+
 ## [0.0.8] -- 2026-07-02
 
 ### Changed

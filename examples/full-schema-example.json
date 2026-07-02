@@ -1,0 +1,269 @@
+{
+  "artefact": {
+    "artifact_id": "thruster-control-si",
+    "role": "si_internal",
+    "status": "draft",
+    "contract_version": "1.0.0",
+    "compatibility": "none",
+    "published_at": "2026-07-01",
+    "lifecycle_state": "active",
+    "intended_consumers": ["integrator", "class_society"]
+  },
+  "project": {
+    "project_id": "thruster_control_demo",
+    "project_name": "Thruster Control System Integration",
+    "schema_version": "0.0.9",
+    "client": "Maritime Offshore Corp",
+    "vessel_type": "OSV",
+    "revision": "1.0",
+    "date": "2026-07-01"
+  },
+  "parties": [
+    {
+      "id": "TCS_VENDOR",
+      "name": "Thruster Control Systems AS",
+      "kind": "vendor",
+      "contact": "tech@tcs-vendor.example.com"
+    },
+    {
+      "id": "RCS_VENDOR",
+      "name": "Remote Control Solutions Ltd",
+      "kind": "vendor",
+      "contact": "support@rcs-vendor.example.com"
+    },
+    {
+      "id": "YARD_A",
+      "name": "Scandinavian Shipyard Group",
+      "kind": "shipyard"
+    }
+  ],
+  "components": [
+    {
+      "id": "RCS",
+      "name": "Remote Control Station",
+      "vendor": "RCS_VENDOR",
+      "modes": [
+        {
+          "id": "remote",
+          "name": "Remote",
+          "description": "Bridge remote control mode. Command authority from DP or bridge lever."
+        },
+        {
+          "id": "local",
+          "name": "Local",
+          "description": "Local panel control. Overrides remote commands."
+        }
+      ],
+      "modules": [
+        { "id": "MAIN", "name": "Main Controller", "description": "Primary bridge controller" },
+        { "id": "BACKUP", "name": "Backup Controller", "description": "Redundant standby" }
+      ],
+      "ports": [
+        {
+          "id": "cmd_out",
+          "direction": "out",
+          "module_id": "MAIN",
+          "port_type": "signal",
+          "protocol": "hardwired",
+          "terminals": ["X1-01", "X1-02"]
+        },
+        {
+          "id": "speed_out",
+          "direction": "out",
+          "module_id": "MAIN",
+          "port_type": "analog",
+          "protocol": "hardwired",
+          "terminals": ["X2-01", "X2-02"]
+        },
+        {
+          "id": "ready_in",
+          "direction": "in",
+          "terminals": ["X3-01"]
+        }
+      ]
+    },
+    {
+      "id": "TCS",
+      "name": "Thruster Control System",
+      "vendor": "TCS_VENDOR",
+      "modes": [
+        {
+          "id": "remote",
+          "name": "Remote",
+          "description": "Accept remote commands from bridge station."
+        },
+        {
+          "id": "power",
+          "name": "Power",
+          "description": "Thruster target is power (kW) setpoint."
+        }
+      ],
+      "modules": [
+        { "id": "ACU", "name": "Azimuth Control Unit", "description": "Thruster positioning and thrust" },
+        { "id": "HPS", "name": "Hydraulic Pump Starter", "description": "Hydraulic system pump control" }
+      ],
+      "ports": [
+        {
+          "id": "cmd_in",
+          "direction": "in",
+          "module_id": "ACU",
+          "port_type": "signal",
+          "protocol": "hardwired",
+          "terminals": ["X2-11"]
+        },
+        {
+          "id": "speed_in",
+          "direction": "in",
+          "module_id": "ACU",
+          "port_type": "analog",
+          "protocol": "hardwired",
+          "terminals": ["X2-13", "X2-14"]
+        },
+        {
+          "id": "ready_out",
+          "direction": "out",
+          "module_id": "ACU",
+          "port_type": "signal",
+          "protocol": "hardwired",
+          "terminals": ["X3-01"]
+        }
+      ]
+    }
+  ],
+  "signals": [
+    {
+      "id": "start_cmd",
+      "name": "THRUSTER START COMMAND",
+      "signal_type": "digital",
+      "category": "command",
+      "subtype": ["no", "pulse"],
+      "processing": {
+        "filtered": false,
+        "delay_ms": 0
+      },
+      "attributes": {
+        "scaling": 1.0,
+        "sampling_interval_ms": 100,
+        "fail_safe_mode": "hold_last"
+      },
+      "value_mapping": {
+        "kind": "discrete",
+        "entries": [
+          { "raw": 0, "meaning": "no command" },
+          { "raw": 1, "meaning": "start request" }
+        ]
+      },
+      "vendor_io_mappings": [
+        {
+          "party_id": "TCS_VENDOR",
+          "item": "DI00",
+          "direction": "in",
+          "terminals": ["X2-11"]
+        }
+      ]
+    },
+    {
+      "id": "speed_setpoint",
+      "name": "THRUSTER SPEED SETPOINT",
+      "signal_type": "analog",
+      "category": "command",
+      "processing": {
+        "filtered": true,
+        "delay_ms": 100,
+        "moving_average_window": 5
+      },
+      "value_mapping": {
+        "kind": "linear",
+        "raw": { "low": 0.0, "high": 10.0, "unit": "V" },
+        "physical": { "low": 0.0, "high": 1500.0, "unit": "rpm" }
+      },
+      "vendor_io_mappings": [
+        {
+          "party_id": "TCS_VENDOR",
+          "item": "AI01",
+          "direction": "in",
+          "terminals": ["X2-13", "X2-14"]
+        }
+      ]
+    },
+    {
+      "id": "ready_feedback",
+      "name": "THRUSTER READY FEEDBACK",
+      "signal_type": "digital",
+      "category": "feedback",
+      "value_mapping": {
+        "kind": "discrete",
+        "entries": [
+          { "raw": 0, "meaning": "not ready" },
+          { "raw": 1, "meaning": "ready" }
+        ]
+      },
+      "vendor_io_mappings": [
+        {
+          "party_id": "TCS_VENDOR",
+          "item": "DO00",
+          "direction": "out",
+          "terminals": ["X3-01"]
+        }
+      ]
+    }
+  ],
+  "functions": [
+    {
+      "id": "fn.thruster_start_stop",
+      "name": "Thruster Start/Stop Control",
+      "component_id": "TCS",
+      "modes": ["remote"],
+      "input_signals": [
+        {
+          "id": "start_cmd",
+          "name": "THRUSTER START COMMAND",
+          "signal_type": "digital",
+          "category": "command"
+        }
+      ],
+      "output_signals": [
+        {
+          "id": "ready_feedback",
+          "name": "THRUSTER READY FEEDBACK",
+          "signal_type": "digital",
+          "category": "feedback"
+        }
+      ],
+      "parameters": [
+        { "name": "startup_timeout_s", "type": "float" },
+        { "name": "retry_count", "type": "int" }
+      ],
+      "function_description": "Validates preconditions (hydraulic pressure, no active alarms) then executes thruster start or stop sequence per IEC 61162 requirements."
+    }
+  ],
+  "connections": [
+    {
+      "id": "conn.start_cmd",
+      "from_port_ref": "component.RCS.port.cmd_out",
+      "to_port_ref": "component.TCS.port.cmd_in",
+      "connection_type": "control",
+      "signal": "start_cmd"
+    },
+    {
+      "id": "conn.speed_setpoint",
+      "from_port_ref": "component.RCS.port.speed_out",
+      "to_port_ref": "component.TCS.port.speed_in",
+      "connection_type": "control",
+      "signal": "speed_setpoint"
+    },
+    {
+      "id": "conn.ready_feedback",
+      "from_port_ref": "component.TCS.port.ready_out",
+      "to_port_ref": "component.RCS.port.ready_in",
+      "connection_type": "status",
+      "signal": "ready_feedback"
+    }
+  ],
+  "glossary": {
+    "RCS": "Remote Control Station — bridge-level command interface",
+    "TCS": "Thruster Control System — thruster-local controller",
+    "ACU": "Azimuth Control Unit",
+    "HPS": "Hydraulic Pump Starter"
+  }
+}
