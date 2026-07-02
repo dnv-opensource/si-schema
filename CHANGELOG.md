@@ -5,6 +5,60 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [Unreleased]
+
+
+## [0.0.8] -- 2026-07-02
+
+### Changed
+- Moved generated JSON schema files from `publish/` to `publish/schemas/` to
+  mirror the public repository layout. Simplifies publish scripts and workflows.
+
+### Added
+- **`bump-version` agent skill** (`.github/skills/bump-version/`): a reusable
+  skill that propagates a version number to all files that embed it. Invocable
+  via `/bump-version`.
+- **`prepare-release` agent skill** (`.github/skills/prepare-release/`): a
+  release orchestration workflow that delegates version bumping to
+  `bump-version` and adds changelog promotion, schema sync, and quality gates.
+  Invocable via `/prepare-release`.
+- **Version-files registry** (`bump-version/references/version-files.md`):
+  authoritative list of all files that embed the version number, organized by
+  update mechanism.
+- **Breaking:** `ProjectMeta.schema_version` is now a required field (no
+  default). Must be a valid PEP 440 version string and must not exceed the
+  current package version. Replaces the previous `Literal["0.0.4", "0.0.5",
+  "0.0.6"]` with default `"0.0.6"`.
+- Standardized all Python enum **member names** to `UPPER_CASE` per PEP 8 and
+  the Python Enum HOWTO. All 32 `StrEnum` classes in `enums.py` updated.
+  This is a Python-side-only change; serialized JSON schema values are
+  unaffected.
+- **Breaking:** Standardized all enum values to lowercase/snake_case for
+  uniformity across the JSON schema. Affected enums: `Direction`, `SignalType`,
+  `PortType`, `ProtocolFamily`, `SignalCategory`, `FunctionCategory`,
+  `SignalSubtype`, `DataType`. See below for details.
+  - `Direction`: `IN`/`OUT` changed to `in`/`out`
+  - `SignalType`: `Digital`/`Analog`/`CAN`/`I2C`/`UART` changed to
+    `digital`/`analog`/`can`/`i2c`/`uart` (`1-wire` kept as-is)
+  - `PortType`: `Signal`/`CAN-TC`/`Analog`/`Resistor`/`Serial`/`Network`
+    changed to `signal`/`can_tc`/`analog`/`resistor`/`serial`/`network`
+    (`4-20mA` and `0-10V` kept as engineering notation)
+  - `ProtocolFamily`: `ModbusRTU`/`ModbusTCP`/`CANopen`/`OPCUA`/`Profinet`/
+    `EtherNetIP`/`VendorSpecific` changed to `modbus_rtu`/`modbus_tcp`/
+    `canopen`/`opcua`/`profinet`/`ethernet_ip`/`vendor_specific`
+    (aligns with `AddressingKind` which already used lowercase)
+  - `SignalCategory`: `permission/interlock` changed to `permission_interlock`
+    (removes non-standard forward slash)
+  - `FunctionCategory`: PascalCase values changed to lowercase
+  - `SignalSubtype`: `NO`/`NC` changed to `no`/`nc`
+  - `DataType`: `analog_4_20mA`/`analog_0_10V` changed to
+    `analog_4_20ma`/`analog_0_10v`
+- Website changelog page now auto-syncs from `publish/CHANGELOG.md` at build
+  time via `website/scripts/sync-changelog.cjs`. No manual Svelte edits needed
+  when updating the changelog.
+- Schema-update agent now includes changelog as a dependent artifact (#7) in
+  its propagation checklist.
+
 ## [0.0.7] — 2026-07-01
 
 ### Added

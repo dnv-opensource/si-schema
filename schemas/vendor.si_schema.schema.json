@@ -215,8 +215,8 @@
     },
     "Direction": {
       "enum": [
-        "IN",
-        "OUT"
+        "in",
+        "out"
       ],
       "title": "Direction",
       "type": "string"
@@ -619,14 +619,14 @@
     },
     "PortType": {
       "enum": [
-        "Signal",
-        "CAN-TC",
-        "Analog",
-        "Resistor",
+        "signal",
+        "can_tc",
+        "analog",
+        "resistor",
         "4-20mA",
         "0-10V",
-        "Serial",
-        "Network"
+        "serial",
+        "network"
       ],
       "title": "PortType",
       "type": "string"
@@ -652,12 +652,6 @@
           "title": "Project Name"
         },
         "schema_version": {
-          "default": "0.0.6",
-          "enum": [
-            "0.0.4",
-            "0.0.5",
-            "0.0.6"
-          ],
           "title": "Schema Version",
           "type": "string"
         },
@@ -712,7 +706,8 @@
         }
       },
       "required": [
-        "project_id"
+        "project_id",
+        "schema_version"
       ],
       "title": "ProjectMeta",
       "type": "object"
@@ -865,7 +860,7 @@
     "SignalCategory": {
       "enum": [
         "command",
-        "permission/interlock",
+        "permission_interlock",
         "feedback",
         "safety",
         "mode",
@@ -914,12 +909,12 @@
     },
     "SignalType": {
       "enum": [
-        "Digital",
-        "Analog",
-        "CAN",
-        "I2C",
+        "digital",
+        "analog",
+        "can",
+        "i2c",
         "1-wire",
-        "UART"
+        "uart"
       ],
       "title": "SignalType",
       "type": "string"
@@ -1077,5 +1072,5 @@
   "title": "VendorSISchema",
   "type": "object",
   "$id": "https://dnv-opensource.github.io/si-schema/vendor.si_schema.schema.json",
-  "version": "0.0.7"
+  "version": "0.0.8"
 }
