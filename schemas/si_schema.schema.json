@@ -570,15 +570,18 @@
       "description": "Replaces legacy System (\u00a74). Execution host and interface container.",
       "properties": {
         "id": {
+          "description": "Stable identifier, e.g. RCS.",
           "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
           "title": "Id",
           "type": "string"
         },
         "name": {
+          "description": "Display name.",
           "title": "Name",
           "type": "string"
         },
         "modes": {
+          "description": "Vendor-owned canonical mode definitions for this component. Functions may only reference a subset of these mode IDs.",
           "items": {
             "$ref": "#/$defs/Mode"
           },
@@ -586,6 +589,7 @@
           "type": "array"
         },
         "modules": {
+          "description": "Physical/logical subdivisions.",
           "items": {
             "$ref": "#/$defs/Module"
           },
@@ -593,6 +597,7 @@
           "type": "array"
         },
         "ports": {
+          "description": "Dedicated interface endpoints for connection edges and ontology predicates.",
           "items": {
             "$ref": "#/$defs/Port"
           },
@@ -609,6 +614,7 @@
             }
           ],
           "default": null,
+          "description": "Vendor metadata.",
           "title": "Vendor"
         },
         "notes": {
@@ -636,22 +642,27 @@
       "description": "A directed edge between two ports transmitting one signal.",
       "properties": {
         "id": {
+          "description": "Connection identifier.",
           "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
           "title": "Id",
           "type": "string"
         },
         "from_port_ref": {
+          "description": "Fully-qualified source port reference.",
           "title": "From Port Ref",
           "type": "string"
         },
         "to_port_ref": {
+          "description": "Fully-qualified target port reference.",
           "title": "To Port Ref",
           "type": "string"
         },
         "connection_type": {
-          "$ref": "#/$defs/ConnectionType"
+          "$ref": "#/$defs/ConnectionType",
+          "description": "Project profile type: physical, logical, control, data, status, etc."
         },
         "signal": {
+          "description": "Signal ID transmitted by this connection. One connection carries one signal.",
           "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
           "title": "Signal",
           "type": "string"
@@ -659,6 +670,7 @@
         "properties": {
           "type": "object",
           "additionalProperties": true,
+          "description": "Additional connection metadata.",
           "title": "Properties"
         }
       },
@@ -941,20 +953,24 @@
       "description": "Unified hierarchical function entity (\u00a77). No system/component-level split.",
       "properties": {
         "id": {
+          "description": "Stable function identifier.",
           "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
           "title": "Id",
           "type": "string"
         },
         "name": {
+          "description": "e.g. VFD Start/Stop (Remote).",
           "title": "Name",
           "type": "string"
         },
         "component_id": {
+          "description": "ID of the component this function is allocated to, if already allocated.",
           "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
           "title": "Component Id",
           "type": "string"
         },
         "modes": {
+          "description": "References to Component.modes[*].id where this function is allowed to execute.",
           "items": {
             "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
             "type": "string"
@@ -964,6 +980,7 @@
           "type": "array"
         },
         "input_signals": {
+          "description": "Signals consumed by the function.",
           "items": {
             "$ref": "#/$defs/Signal"
           },
@@ -971,6 +988,7 @@
           "type": "array"
         },
         "output_signals": {
+          "description": "Signals produced by the function.",
           "items": {
             "$ref": "#/$defs/Signal"
           },
@@ -978,6 +996,7 @@
           "type": "array"
         },
         "parameters": {
+          "description": "Typed function parameters with name and type.",
           "items": {
             "$ref": "#/$defs/Parameter"
           },
@@ -1332,6 +1351,7 @@
       "description": "Vendor-defined component mode definition, referenced by functions.",
       "properties": {
         "id": {
+          "description": "Stable mode key such as remote or power.",
           "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
           "title": "Id",
           "type": "string"
@@ -1346,9 +1366,11 @@
             }
           ],
           "default": null,
+          "description": "Display label.",
           "title": "Name"
         },
         "description": {
+          "description": "Required free-text semantics for the mode.",
           "minLength": 1,
           "title": "Description",
           "type": "string"
@@ -1396,6 +1418,7 @@
       "additionalProperties": false,
       "properties": {
         "id": {
+          "description": "Unique within the parent component.",
           "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
           "title": "Id",
           "type": "string"
@@ -1410,6 +1433,7 @@
             }
           ],
           "default": null,
+          "description": "e.g. Main, Backup, ACU, HPS.",
           "title": "Name"
         },
         "description": {
@@ -1422,6 +1446,7 @@
             }
           ],
           "default": null,
+          "description": "Free text description.",
           "title": "Description"
         }
       },
@@ -1657,17 +1682,20 @@
       "additionalProperties": false,
       "properties": {
         "id": {
+          "description": "Stable cross-reference id.",
           "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
           "title": "Id",
           "type": "string"
         },
         "name": {
+          "description": "Display name.",
           "title": "Name",
           "type": "string"
         },
         "kind": {
           "$ref": "#/$defs/PartyKind",
-          "default": "vendor"
+          "default": "vendor",
+          "description": "Defaults to vendor; also supports integrator, shipowner, shipyard, analytics_provider, class_society, operator."
         },
         "role": {
           "anyOf": [
@@ -1679,6 +1707,7 @@
             }
           ],
           "default": null,
+          "description": "Project-specific role text.",
           "title": "Role"
         },
         "contact": {
@@ -1691,6 +1720,7 @@
             }
           ],
           "default": null,
+          "description": "Contact channel.",
           "title": "Contact"
         }
       },
@@ -1756,12 +1786,14 @@
       "description": "First-class interface endpoint on a Component (\u00a76).",
       "properties": {
         "id": {
+          "description": "Unique within parent component.",
           "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
           "title": "Id",
           "type": "string"
         },
         "direction": {
-          "$ref": "#/$defs/PortDirection"
+          "$ref": "#/$defs/PortDirection",
+          "description": "in, out, or undefined."
         },
         "module_id": {
           "anyOf": [
@@ -1774,9 +1806,11 @@
             }
           ],
           "default": null,
+          "description": "Optional owning module. If set, it must exist in Component.modules[*].id.",
           "title": "Module Id"
         },
         "terminals": {
+          "description": "Physical terminal mapping.",
           "items": {
             "type": "string"
           },
@@ -1792,7 +1826,8 @@
               "type": "null"
             }
           ],
-          "default": null
+          "default": null,
+          "description": "Required when direction=out; optional for in and undefined."
         },
         "protocol": {
           "anyOf": [
@@ -1804,10 +1839,12 @@
             }
           ],
           "default": null,
+          "description": "Required when direction=out; optional for in and undefined.",
           "title": "Protocol"
         },
         "attributes": {
           "additionalProperties": true,
+          "description": "Extensible key-value metadata (e.g. actUpon).",
           "title": "Attributes",
           "type": "object"
         }
@@ -1846,6 +1883,7 @@
       "additionalProperties": false,
       "properties": {
         "project_id": {
+          "description": "Stable project key, e.g. eps_demo.",
           "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
           "title": "Project Id",
           "type": "string"
@@ -1860,9 +1898,11 @@
             }
           ],
           "default": null,
+          "description": "Human-readable project title.",
           "title": "Project Name"
         },
         "schema_version": {
+          "description": "PEP 440 version string identifying the schema version this document was authored against. Must not exceed the current package version.",
           "title": "Schema Version",
           "type": "string"
         },
@@ -1876,6 +1916,7 @@
             }
           ],
           "default": null,
+          "description": "Shipyard or customer name.",
           "title": "Client"
         },
         "vessel_type": {
@@ -1888,6 +1929,7 @@
             }
           ],
           "default": null,
+          "description": "Vessel classification string.",
           "title": "Vessel Type"
         },
         "revision": {
@@ -1900,6 +1942,7 @@
             }
           ],
           "default": null,
+          "description": "Project revision label.",
           "title": "Revision"
         },
         "date": {
@@ -1913,6 +1956,7 @@
             }
           ],
           "default": null,
+          "description": "ISO-8601 date.",
           "title": "Date"
         }
       },
@@ -2163,21 +2207,26 @@
       "description": "Project-level signal definition (\u00a79).",
       "properties": {
         "id": {
+          "description": "Stable signal identifier.",
           "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
           "title": "Id",
           "type": "string"
         },
         "name": {
+          "description": "Vendor-neutral logical name.",
           "title": "Name",
           "type": "string"
         },
         "signal_type": {
-          "$ref": "#/$defs/SignalType"
+          "$ref": "#/$defs/SignalType",
+          "description": "digital, analog, can, i2c, 1-wire, uart."
         },
         "category": {
-          "$ref": "#/$defs/SignalCategory"
+          "$ref": "#/$defs/SignalCategory",
+          "description": "command, permission_interlock, feedback, safety, mode, monitoring."
         },
         "subtype": {
+          "description": "E.g. nc, no, pulse.",
           "items": {
             "type": "string"
           },
@@ -2193,10 +2242,12 @@
               "type": "null"
             }
           ],
-          "default": null
+          "default": null,
+          "description": "filtered, delay, moving_average."
         },
         "attributes": {
           "additionalProperties": true,
+          "description": "scaling, sampling, fail-safe, redundancy, sync/async, compatibility.",
           "title": "Attributes",
           "type": "object"
         },
@@ -2224,9 +2275,11 @@
             }
           ],
           "default": null,
+          "description": "Optional raw/physical mapping.",
           "title": "Value Mapping"
         },
         "vendor_io_mappings": {
+          "description": "Per-vendor IO tag bindings (party_id, item, direction, terminals).",
           "items": {
             "$ref": "#/$defs/VendorIOMapping"
           },
@@ -2235,6 +2288,7 @@
         },
         "assumed": {
           "default": false,
+          "description": "Mark inferred values (true) vs. values extracted from vendor documentation.",
           "title": "Assumed",
           "type": "boolean"
         },
@@ -2248,6 +2302,7 @@
             }
           ],
           "default": null,
+          "description": "Provenance pointer to the source document or datasheet.",
           "title": "Source Doc Ref"
         },
         "notes": {
@@ -2260,6 +2315,7 @@
             }
           ],
           "default": null,
+          "description": "Free-text notes.",
           "title": "Notes"
         }
       },
@@ -2775,5 +2831,5 @@
   "title": "SISchema",
   "type": "object",
   "$id": "https://dnv-opensource.github.io/si-schema/si_schema.schema.json",
-  "version": "0.0.9"
+  "version": "0.1.0a1"
 }
