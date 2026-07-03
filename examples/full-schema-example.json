@@ -12,7 +12,7 @@
   "project": {
     "project_id": "thruster_control_demo",
     "project_name": "Thruster Control System Integration",
-    "schema_version": "0.1.0a1",
+    "schema_version": "0.1.0a2",
     "client": "Maritime Offshore Corp",
     "vessel_type": "OSV",
     "revision": "1.0",
@@ -60,7 +60,7 @@
       ],
       "ports": [
         {
-          "id": "cmd_out",
+          "id": "DO01",
           "direction": "out",
           "module_id": "MAIN",
           "port_type": "signal",
@@ -68,7 +68,7 @@
           "terminals": ["X1-01", "X1-02"]
         },
         {
-          "id": "speed_out",
+          "id": "AO07",
           "direction": "out",
           "module_id": "MAIN",
           "port_type": "analog",
@@ -76,7 +76,7 @@
           "terminals": ["X2-01", "X2-02"]
         },
         {
-          "id": "ready_in",
+          "id": "DI02",
           "direction": "in",
           "terminals": ["X3-01"]
         }
@@ -240,14 +240,14 @@
   "connections": [
     {
       "id": "conn.start_cmd",
-      "from_port_ref": "component.RCS.port.cmd_out",
+      "from_port_ref": "component.RCS.port.DO01",
       "to_port_ref": "component.TCS.port.cmd_in",
       "connection_type": "control",
       "signal": "start_cmd"
     },
     {
       "id": "conn.speed_setpoint",
-      "from_port_ref": "component.RCS.port.speed_out",
+      "from_port_ref": "component.RCS.port.AO07",
       "to_port_ref": "component.TCS.port.speed_in",
       "connection_type": "control",
       "signal": "speed_setpoint"
@@ -255,7 +255,7 @@
     {
       "id": "conn.ready_feedback",
       "from_port_ref": "component.TCS.port.ready_out",
-      "to_port_ref": "component.RCS.port.ready_in",
+      "to_port_ref": "component.RCS.port.DI02",
       "connection_type": "status",
       "signal": "ready_feedback"
     }

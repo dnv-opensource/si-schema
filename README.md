@@ -5,7 +5,7 @@
 
 [![Website](https://img.shields.io/badge/website-dnv--opensource.github.io%2Fsi--schema-0a2540?logo=githubpages)](https://dnv-opensource.github.io/si-schema/)
 [![Schema](https://img.shields.io/badge/JSON_Schema-draft%202020--12-00a3a1)](https://dnv-opensource.github.io/si-schema/si_schema.schema.json)
-[![Spec](https://img.shields.io/badge/spec-v0.1.0a1-blue)](./TEST_SHEET_DATA_STRUCTURE.md)
+[![Spec](https://img.shields.io/badge/spec-v0.1.0a2-blue)](./TEST_SHEET_DATA_STRUCTURE.md)
 [![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
 
 ---
@@ -23,7 +23,7 @@ components, signals, and functions in a standardised format, and **system
 integrators** can compose those descriptions into cross-component architecture,
 connections, and contract-level artifacts.
 
-It is maintained by the **Complex Integrated System (CIS) Initiative** at
+It is maintained by the **Complex Integrated Systems (CIS) Initiative** at
 [DNV](https://www.dnv.com).
 
 ---

@@ -2,7 +2,7 @@
   "project": {
     "project_id": "thruster_control_demo",
     "project_name": "Thruster Control System Integration",
-    "schema_version": "0.1.0a1",
+    "schema_version": "0.1.0a2",
     "client": "Maritime Offshore Corp",
     "vessel_type": "OSV",
     "revision": "1.0",

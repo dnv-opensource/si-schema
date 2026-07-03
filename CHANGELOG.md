@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0a2] -- 2026-07-03
+
+### Changed
+- Clarified `Port.id` field description to indicate vendor-specific
+  identification (e.g. 'DI01') rather than generic descriptive names.
+- Renamed port IDs in examples from descriptive names (`cmd_out`, `speed_out`,
+  `ready_in`) to vendor-style identifiers (`DO01`, `AO07`, `DI02`).
+- Updated website tagline from "a System-Integration initiative" to
+  "A DNV Initiative".
+
+### Fixed
+- Corrected "Complex Integrated System" to "Complex Integrated Systems"
+  (plural) in published metadata and website.
 
 ## [0.1.0a1] -- 2026-07-03
 

@@ -569,7 +569,7 @@
       "description": "First-class interface endpoint on a Component (\u00a76).",
       "properties": {
         "id": {
-          "description": "Unique within parent component.",
+          "description": "Vendor specific identification of the port, e.g. 'DI01'. Unique within parent component.",
           "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
           "title": "Id",
           "type": "string"
@@ -1122,5 +1122,5 @@
   "title": "VendorSISchema",
   "type": "object",
   "$id": "https://dnv-opensource.github.io/si-schema/vendor.si_schema.schema.json",
-  "version": "0.1.0a1"
+  "version": "0.1.0a2"
 }
