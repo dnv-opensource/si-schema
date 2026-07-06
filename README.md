@@ -3,9 +3,9 @@
 > Open data structure for ship **System Integration** test sheets.
 > Vendor-neutral. Human-readable. Machine-validated.
 
-[![Website](https://img.shields.io/badge/website-dnv--opensource.github.io%2Fsi--schema-0a2540?logo=githubpages)](https://dnv-opensource.github.io/si-schema/)
-[![Schema](https://img.shields.io/badge/JSON_Schema-draft%202020--12-00a3a1)](https://dnv-opensource.github.io/si-schema/si_schema.schema.json)
-[![Spec](https://img.shields.io/badge/spec-v0.1.0a2-blue)](./TEST_SHEET_DATA_STRUCTURE.md)
+[![SI_Schema](https://img.shields.io/badge/si_schema-v0.1.0-blue)][si_schema_schema]
+[![Vendor_Schema](https://img.shields.io/badge/vendor_schema-v0.1.0-blue)][vendor_schema_schema]
+[![Website](https://img.shields.io/github/actions/workflow/status/dnv-opensource/si-schema/pages/pages-build-deployment?label=website)][si_schema_website]
 [![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
 
 ---
@@ -175,3 +175,9 @@ For collaboration enquiries: **CIS@dnv.com**.
 ## License
 
 [MIT](./LICENSE) -- DNV AS
+
+
+<!-- Markdown link & img dfn's -->
+[si_schema_schema]: https://dnv-opensource.github.io/si-schema/si_schema.schema.json
+[vendor_schema_schema]: https://dnv-opensource.github.io/si-schema/vendor.si_schema.schema.json
+[si_schema_website]: https://dnv-opensource.github.io/si-schema
