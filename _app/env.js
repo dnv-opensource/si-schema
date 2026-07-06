@@ -1,0 +1,1 @@
+export const env={"PUBLIC_REPO":"dnv-opensource/si-schema","PUBLIC_BRANCH":"main"}

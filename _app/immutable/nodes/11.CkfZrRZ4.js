@@ -1,0 +1,9 @@
+import"../chunks/Bzak7iHL.js";import"../chunks/DSDNSyjs.js";import{aM as s,a2 as a,u as c,a4 as i}from"../chunks/CHFEj7fB.js";import{S as n}from"../chunks/Dv5_CYsY.js";import{Y as l}from"../chunks/Ck3_JoaJ.js";var p=i(`<table><thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Notes</th></tr></thead><tbody><tr><td><code>project_id</code></td><td><code>str</code> (<abbr class="type-hint" title="Required format: ASCII letters, digits, '-' or '_'. Must start with a letter or digit. No spaces or other punctuation.">slug</abbr>)</td><td>yes</td><td>Stable project key, e.g. <code>eps_demo</code>.</td></tr><tr><td><code>project_name</code></td><td><code>str</code></td><td>no</td><td>Human-readable project title.</td></tr><tr><td><code>schema_version</code></td><td><code>str</code></td><td>yes</td><td>PEP 440 version string identifying the schema version this document was authored against. Must not
+					exceed the current package version.</td></tr><tr><td><code>client</code></td><td><code>str</code></td><td>no</td><td>Shipyard or customer name.</td></tr><tr><td><code>vessel_type</code></td><td><code>str</code></td><td>no</td><td>Vessel classification string.</td></tr><tr><td><code>revision</code></td><td><code>str</code></td><td>no</td><td>Project revision label.</td></tr><tr><td><code>date</code></td><td><code>date</code></td><td>no</td><td>ISO-8601 date.</td></tr></tbody></table> <!>`,1);function v(e){const d=`project:
+	project_id: eps_demo
+	project_name: Vessel Auxiliary Power System
+	schema_version: "0.1.0"
+	client: Shipyard A
+	vessel_type: LNG Carrier
+	revision: 0.1.0
+	date: 2026-06-13`;n(e,{title:"ProjectMeta",lead:"Top-level project identifiers. Required at the root of every si-schema YAML file.",children:(o,m)=>{var t=p(),r=s(a(t),2);l(r,{filename:"test_sheet.yaml",code:d}),c(o,t)},$$slots:{default:!0}})}export{v as component};
